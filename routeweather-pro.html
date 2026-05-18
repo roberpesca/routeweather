@@ -9,243 +9,249 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#07090d;--panel:#0b0f16;--card:#0f1520;--border:#1a2535;
-  --accent:#b8f400;--blue:#3ab6ff;--orange:#ff7c35;--red:#ff3d6b;
-  --purple:#9d77f5;--green:#2dde8e;--yellow:#ffd43b;--strava:#fc4c02;
-  --tailwind:#2dde8e;--headwind:#ff3d6b;--crosswind:#ffd43b;
-  --text:#d8e8f4;--muted:#3e5568;
+  --bg:#f5f7fa;--panel:#ffffff;--card:#f0f2f5;--border:#e0e4ea;
+  --accent:#2563eb;--blue:#3b82f6;--orange:#f97316;--red:#ef4444;
+  --purple:#8b5cf6;--green:#22c55e;--yellow:#eab308;--strava:#fc4c02;
+  --tailwind:#22c55e;--headwind:#ef4444;--crosswind:#eab308;
+  --text:#1e293b;--muted:#64748b;
   --font-h:'Barlow Condensed',sans-serif;--font-m:'JetBrains Mono',monospace;
 }
 html,body{height:100%;overflow:hidden}
-body{font-family:var(--font-m);background:var(--bg);color:var(--text);display:flex;flex-direction:column;height:100vh;font-size:12px}
+body{font-family:var(--font-m);background:var(--bg);color:var(--text);display:flex;flex-direction:column;height:100vh;font-size:13px}
 
-/* ── Header ── */
-header{display:flex;align-items:center;gap:12px;padding:0 18px;height:50px;border-bottom:1px solid var(--border);background:var(--panel);flex-shrink:0;z-index:10}
-.logo{font-family:var(--font-h);font-weight:900;font-size:20px;letter-spacing:.06em;color:var(--accent);text-transform:uppercase;line-height:1}
+/* -- Header -- */
+header{display:flex;align-items:center;gap:12px;padding:0 18px;height:50px;border-bottom:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.06);background:var(--panel);flex-shrink:0;z-index:10}
+.logo{font-family:var(--font-h);font-weight:900;font-size:24px;letter-spacing:.06em;color:var(--accent);text-transform:uppercase;line-height:1}
 .logo em{color:var(--text);font-style:normal}
-.logo sup{font-size:9px;color:var(--orange);letter-spacing:.1em;vertical-align:super;margin-left:2px}
-.tagline{font-size:9px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;margin-top:1px}
+.logo sup{font-size:10px;color:var(--orange);letter-spacing:.1em;vertical-align:super;margin-left:2px}
+.tagline{font-size:10px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;margin-top:1px}
 .hdr-badges{display:flex;gap:6px;margin-left:auto;align-items:center}
-.badge{font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:3px;border:1px solid var(--border);color:var(--muted);white-space:nowrap}
-.badge.live{border-color:rgba(184,244,0,.35);color:var(--accent);background:rgba(184,244,0,.07)}
-.badge.hist{border-color:rgba(157,119,245,.35);color:var(--purple);background:rgba(157,119,245,.07)}
+.badge{font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:3px;border:1px solid var(--border);color:var(--muted);white-space:nowrap}
+.badge.live{border-color:rgba(37,99,235,.35);color:var(--accent);background:rgba(37,99,235,.07)}
+.badge.hist{border-color:rgba(139,92,246,.35);color:var(--purple);background:rgba(139,92,246,.07)}
 .badge.strava-b{border-color:rgba(252,76,2,.35);color:var(--strava);background:rgba(252,76,2,.07);cursor:pointer}
 .badge.strava-b:hover{background:rgba(252,76,2,.14)}
 
-/* ── Lang toggle ── */
+/* -- Lang toggle -- */
 .lang-toggle{display:flex;align-items:center;gap:0;border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-left:4px;flex-shrink:0}
-.lang-btn{font-family:var(--font-h);font-size:10px;font-weight:700;letter-spacing:.08em;padding:3px 8px;background:transparent;color:var(--muted);border:none;cursor:pointer;transition:all .15s}
-.lang-btn.active{background:var(--accent);color:#070a00}
+.lang-btn{font-family:var(--font-h);font-size:11px;font-weight:700;letter-spacing:.08em;padding:3px 8px;background:transparent;color:var(--muted);border:none;cursor:pointer;transition:all .15s}
+.lang-btn.active{background:var(--accent);color:#fff}
 .lang-btn:hover:not(.active){color:var(--text)}
 
-/* ── Layout ── */
+/* -- Layout -- */
 main{display:flex;flex:1;overflow:hidden}
 .sidebar{width:310px;flex-shrink:0;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
 .sidebar::-webkit-scrollbar{width:3px}
 .sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
-/* ── Sections ── */
+/* -- Sections -- */
 .sec-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 7px;cursor:pointer;user-select:none}
 .sec-hdr:hover .sec-label{color:var(--text)}
-.sec-label{font-family:var(--font-h);font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);transition:color .15s}
-.sec-chevron{font-size:10px;color:var(--muted);transition:transform .2s}
+.sec-label{font-family:var(--font-h);font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);transition:color .15s}
+.sec-chevron{font-size:11px;color:var(--muted);transition:transform .2s}
 .sec-chevron.open{transform:rotate(180deg)}
 .sec-body{padding:0 12px 10px;display:flex;flex-direction:column;gap:8px}
 .sec-body.hidden{display:none}
 
-/* ── Strava section ── */
-.strava-connect{background:linear-gradient(135deg,rgba(252,76,2,.12),rgba(252,76,2,.04));border:1px solid rgba(252,76,2,.25);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px}
+/* -- Strava section -- */
+.strava-connect{background:linear-gradient(135deg,rgba(252,76,2,.08),rgba(252,76,2,.02));border:1px solid rgba(252,76,2,.2);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px}
 .strava-logo{font-family:var(--font-h);font-size:16px;font-weight:900;color:var(--strava);letter-spacing:.04em}
-.strava-desc{font-size:10px;color:var(--muted);line-height:1.6}
-.btn-strava{background:var(--strava);color:#fff;font-family:var(--font-h);font-size:13px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;border:none;border-radius:6px;padding:9px 14px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:opacity .15s,transform .15s;width:100%}
+.strava-desc{font-size:11px;color:var(--muted);line-height:1.6}
+.btn-strava{background:var(--strava);color:#fff;font-family:var(--font-h);font-size:14px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;border:none;border-radius:6px;padding:9px 14px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:opacity .15s,transform .15s;width:100%}
 .btn-strava:hover{opacity:.9;transform:translateY(-1px)}
 .btn-strava:disabled{opacity:.4;cursor:not-allowed;transform:none}
-.strava-arch-link{font-size:10px;color:var(--orange);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.strava-arch-link{font-size:11px;color:var(--orange);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
 .strava-arch-link:hover{color:var(--yellow)}
 
-/* ── Strava settings ── */
-/* strava-settings removed — credentials now handled by backend */
-.strava-status{font-size:10px;padding:8px;border-radius:6px;display:none;align-items:center;gap:6px}
-.strava-status.connected{display:flex;background:rgba(45,222,142,.08);border:1px solid rgba(45,222,142,.25);color:var(--green)}
-.strava-status.error{display:flex;background:rgba(255,61,107,.08);border:1px solid rgba(255,61,107,.25);color:var(--red)}
-.btn-strava-disconnect{background:transparent;border:1px solid rgba(255,61,107,.3);color:var(--red);font-family:var(--font-m);font-size:9px;border-radius:4px;padding:4px 8px;cursor:pointer;transition:all .15s;margin-left:auto}
-.btn-strava-disconnect:hover{background:rgba(255,61,107,.1)}
+/* -- Strava settings -- */
+/* strava-settings removed -- credentials now handled by backend */
+.strava-status{font-size:11px;padding:8px;border-radius:6px;display:none;align-items:center;gap:6px}
+.strava-status.connected{display:flex;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);color:var(--green)}
+.strava-status.error{display:flex;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:var(--red)}
+.btn-strava-disconnect{background:transparent;border:1px solid rgba(239,68,68,.3);color:var(--red);font-family:var(--font-m);font-size:10px;border-radius:4px;padding:4px 8px;cursor:pointer;transition:all .15s;margin-left:auto}
+.btn-strava-disconnect:hover{background:rgba(239,68,68,.1)}
 
-/* ── Strava route list ── */
-.strava-route-list{max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:3px}
+/* -- Strava route list -- */
+.strava-route-list{max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:3px}
 .strava-route-list::-webkit-scrollbar{width:3px}
 .strava-route-list::-webkit-scrollbar-thumb{background:var(--border)}
 .strava-route-item{display:flex;flex-direction:column;gap:3px;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:8px 10px;cursor:pointer;transition:all .15s}
 .strava-route-item:hover{border-color:var(--strava);background:rgba(252,76,2,.04)}
-.strava-route-name{font-family:var(--font-h);font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.strava-route-meta{display:flex;gap:10px;font-size:9px;color:var(--muted)}
+.strava-route-name{font-family:var(--font-h);font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.strava-route-meta{display:flex;gap:10px;font-size:10px;color:var(--muted)}
 .strava-route-meta span{display:flex;align-items:center;gap:3px}
-.strava-routes-loading{text-align:center;padding:12px;font-size:10px;color:var(--muted)}
-.strava-routes-empty{text-align:center;padding:12px;font-size:10px;color:var(--muted);font-style:italic}
+.strava-routes-loading{text-align:center;padding:12px;font-size:11px;color:var(--muted)}
+.strava-routes-empty{text-align:center;padding:12px;font-size:11px;color:var(--muted);font-style:italic}
+.btn-load-more{background:var(--card);border:1px solid var(--border);color:var(--accent);font-family:var(--font-h);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border-radius:6px;padding:8px 14px;cursor:pointer;transition:all .15s;width:100%;margin-top:4px}
+.btn-load-more:hover{border-color:var(--accent);background:rgba(37,99,235,.06)}
 
-/* ── Drop zone ── */
+/* -- Drop zone -- */
 .drop-zone{border:1.5px dashed var(--border);border-radius:8px;padding:20px 12px;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--card)}
-.drop-zone:hover,.drop-zone.drag-over{border-color:var(--accent);background:rgba(184,244,0,.04)}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--accent);background:rgba(37,99,235,.04)}
 .drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 .drop-icon{font-size:24px;margin-bottom:6px}
-.drop-txt{font-size:10px;color:var(--muted);line-height:1.7}
+.drop-txt{font-size:11px;color:var(--muted);line-height:1.7}
 .drop-txt strong{color:var(--accent)}
-.btn-demo{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:var(--font-m);font-size:10px;border-radius:6px;padding:7px;cursor:pointer;transition:all .15s;width:100%}
+.btn-demo{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:var(--font-m);font-size:11px;border-radius:6px;padding:7px;cursor:pointer;transition:all .15s;width:100%}
 .btn-demo:hover{border-color:var(--accent);color:var(--accent)}
 
-/* ── Route info ── */
-.route-card{background:rgba(184,244,0,.06);border:1px solid rgba(184,244,0,.18);border-radius:8px;padding:11px 13px;display:none}
+/* -- Route info -- */
+.route-card{background:rgba(37,99,235,.06);border:1px solid rgba(37,99,235,.18);border-radius:8px;padding:11px 13px;display:none}
 .route-card.visible{display:block}
 .rc-name{font-family:var(--font-h);font-size:14px;font-weight:700;color:var(--accent);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rc-meta{display:flex;flex-wrap:wrap;gap:8px;font-size:9px;color:var(--muted)}
+.rc-meta{display:flex;flex-wrap:wrap;gap:8px;font-size:10px;color:var(--muted)}
 .rc-meta span{display:flex;align-items:center;gap:3px}
 
-/* ── Controls ── */
+/* -- Controls -- */
 .field{display:flex;flex-direction:column;gap:4px}
-.field>span{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-input[type=datetime-local],input[type=number],select{background:var(--card);border:1px solid var(--border);color:var(--text);font-family:var(--font-m);font-size:11px;padding:7px 9px;border-radius:6px;width:100%;outline:none;transition:border-color .2s;-webkit-appearance:none}
+.field>span{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+input[type=datetime-local],input[type=number],select{background:var(--card);border:1px solid var(--border);color:var(--text);font-family:var(--font-m);font-size:12px;padding:7px 9px;border-radius:6px;width:100%;outline:none;transition:border-color .2s;-webkit-appearance:none}
 input:focus,select:focus{border-color:var(--accent)}
 input[type=number]::-webkit-inner-spin-button{opacity:.3}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}
 
-/* ── Buttons ── */
-.btn-analyse{background:var(--accent);color:#070a00;font-family:var(--font-h);font-size:15px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;border:none;border-radius:8px;padding:12px;cursor:pointer;width:calc(100% - 24px);margin:0 12px 10px;transition:transform .15s,opacity .15s}
+/* -- Buttons -- */
+.btn-analyse{background:var(--accent);color:#fff;font-family:var(--font-h);font-size:16px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;border:none;border-radius:8px;padding:12px;cursor:pointer;width:calc(100% - 24px);margin:0 12px 10px;transition:transform .15s,opacity .15s}
 .btn-analyse:hover{opacity:.9;transform:translateY(-1px)}
 .btn-analyse:disabled{opacity:.35;cursor:not-allowed;transform:none}
-.btn-notif{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:var(--font-m);font-size:10px;border-radius:6px;padding:8px 10px;cursor:pointer;transition:all .15s;width:calc(100% - 24px);margin:0 12px 10px;display:none;align-items:center;justify-content:center;gap:6px}
+.btn-notif{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:var(--font-m);font-size:11px;border-radius:6px;padding:8px 10px;cursor:pointer;transition:all .15s;width:calc(100% - 24px);margin:0 12px 10px;display:none;align-items:center;justify-content:center;gap:6px}
 .btn-notif:hover{border-color:var(--yellow);color:var(--yellow)}
 .btn-notif.scheduled{border-color:var(--green);color:var(--green)}
 
-/* ── Summary cards ── */
+/* -- Summary cards -- */
 .cards-grid{padding:0 12px 10px;display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .scard{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 11px}
-.scard-lbl{font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
-.scard-val{font-family:var(--font-h);font-size:19px;font-weight:700;line-height:1}
-.scard-sub{font-size:8px;color:var(--muted);margin-top:2px;line-height:1.4}
+.scard-lbl{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.scard-val{font-family:var(--font-h);font-size:22px;font-weight:700;line-height:1}
+.scard-sub{font-size:9px;color:var(--muted);margin-top:2px;line-height:1.4}
 .c-t{color:var(--orange)}.c-r{color:var(--blue)}.c-w{color:var(--purple)}.c-g{color:var(--accent)}
 
-/* ── Waypoint list ── */
+/* -- Waypoint list -- */
 .wp-list{padding:0 12px 12px;display:flex;flex-direction:column;gap:3px;max-height:240px;overflow-y:auto}
 .wp-list::-webkit-scrollbar{width:3px}
 .wp-list::-webkit-scrollbar-thumb{background:var(--border)}
 .wp-item{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:6px 9px;cursor:pointer;transition:border-color .15s}
 .wp-item:hover{border-color:var(--accent)}
 .cbar{width:3px;border-radius:2px;height:22px;flex-shrink:0}
-.w-icon{font-size:13px;flex-shrink:0}
-.w-dist{color:var(--muted);width:38px;flex-shrink:0;font-size:10px}
-.w-time{color:var(--accent);width:40px;flex-shrink:0;font-size:10px}
-.w-temp{color:var(--orange);width:36px;font-size:10px}
-.w-wind{flex:1;font-size:10px}
-.w-rain{width:26px;text-align:right;font-size:10px}
-.headwind-pill{display:inline-block;font-size:8px;padding:1px 5px;border-radius:10px;font-family:var(--font-h);font-weight:700;letter-spacing:.05em}
-.hw-head{background:rgba(255,61,107,.15);color:var(--headwind);border:1px solid rgba(255,61,107,.25)}
-.hw-tail{background:rgba(45,222,142,.15);color:var(--tailwind);border:1px solid rgba(45,222,142,.25)}
-.hw-cross{background:rgba(255,212,59,.12);color:var(--crosswind);border:1px solid rgba(255,212,59,.2)}
+.w-icon{font-size:14px;flex-shrink:0}
+.w-dist{color:var(--muted);width:38px;flex-shrink:0;font-size:11px}
+.w-time{color:var(--accent);width:40px;flex-shrink:0;font-size:11px}
+.w-temp{color:var(--orange);width:52px;font-size:11px}
+.w-wind{flex:1;font-size:11px}
+.w-rain{width:26px;text-align:right;font-size:11px}
+.headwind-pill{display:inline-block;font-size:9px;padding:1px 5px;border-radius:10px;font-family:var(--font-h);font-weight:700;letter-spacing:.05em}
+.hw-head{background:rgba(239,68,68,.12);color:var(--headwind);border:1px solid rgba(239,68,68,.25)}
+.hw-tail{background:rgba(34,197,94,.12);color:var(--tailwind);border:1px solid rgba(34,197,94,.25)}
+.hw-cross{background:rgba(234,179,8,.1);color:var(--crosswind);border:1px solid rgba(234,179,8,.2)}
 
-/* ── Right panel ── */
+/* -- Right panel -- */
 .right-panel{flex:1;display:flex;flex-direction:column;overflow:hidden}
 .map-wrap{flex:1;min-height:0;position:relative}
-#map{width:100%;height:100%;background:#07090d}
+#map{width:100%;height:100%;background:#f5f7fa}
 .map-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;pointer-events:none}
 .map-empty-icon{font-size:52px;opacity:.15}
 .map-empty-txt{font-family:var(--font-h);font-size:14px;letter-spacing:.1em;color:var(--muted);opacity:.5}
 
-/* ── Loading ── */
-.loading{position:absolute;inset:0;background:rgba(7,9,13,.88);display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:1000}
+/* -- Loading -- */
+.loading{position:absolute;inset:0;background:rgba(245,247,250,.9);display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:1000}
 .loading.vis{display:flex}
 .spin{width:34px;height:34px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .load-label{font-family:var(--font-h);font-size:13px;font-weight:700;color:var(--accent);letter-spacing:.12em;text-transform:uppercase}
-.load-sub{font-size:9px;color:var(--muted)}
+.load-sub{font-size:10px;color:var(--muted)}
 
-/* ── Chart area ── */
+/* -- Chart area -- */
 .chart-area{height:190px;flex-shrink:0;background:var(--panel);border-top:1px solid var(--border);padding:9px 14px 8px;display:none}
 .chart-tabs{display:flex;gap:0;margin-bottom:8px;flex-wrap:wrap;gap:3px}
-.ctab{font-family:var(--font-h);font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;padding:3px 10px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s;border-radius:3px}
-.ctab.active{background:var(--accent);color:#070a00;border-color:var(--accent)}
+.ctab{font-family:var(--font-h);font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;padding:3px 10px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s;border-radius:3px}
+.ctab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 #weatherChart{height:128px !important}
 
-/* ── Error banner ── */
-.err{margin:0 12px 6px;background:rgba(255,61,107,.1);border:1px solid rgba(255,61,107,.3);border-radius:6px;padding:7px 10px;font-size:10px;color:var(--red);display:none;line-height:1.5}
+/* -- Error banner -- */
+.err{margin:0 12px 6px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--red);display:none;line-height:1.5}
 .err.vis{display:block}
 
-/* ── Toast ── */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:11px;color:var(--text);transition:transform .3s;z-index:9999;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.6);display:none}
+/* -- Toast -- */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:12px;color:var(--text);transition:transform .3s;z-index:9999;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.1);display:none}
 .toast.vis{display:block;transform:translateX(-50%) translateY(0)}
-.toast.good{border-color:rgba(45,222,142,.4);color:var(--green)}
-.toast.warn{border-color:rgba(255,212,59,.4);color:var(--yellow)}
+.toast.good{border-color:rgba(34,197,94,.4);color:var(--green)}
+.toast.warn{border-color:rgba(234,179,8,.4);color:var(--yellow)}
 
-/* ── Modal ── */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+/* -- Modal -- */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
 .modal-overlay.vis{display:flex}
-.modal{background:var(--panel);border:1px solid var(--border);border-radius:14px;width:100%;max-width:860px;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column}
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:14px;width:100%;max-width:860px;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,.12)}
 .modal::-webkit-scrollbar{width:4px}
 .modal::-webkit-scrollbar-thumb{background:var(--border)}
 .modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border)}
 .modal-title{font-family:var(--font-h);font-size:20px;font-weight:900;color:var(--text);letter-spacing:.06em;text-transform:uppercase}
-.modal-subtitle{font-size:10px;color:var(--muted);letter-spacing:.1em;margin-top:2px}
+.modal-subtitle{font-size:11px;color:var(--muted);letter-spacing:.1em;margin-top:2px}
 .modal-close{background:var(--card);border:1px solid var(--border);color:var(--muted);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .modal-close:hover{border-color:var(--red);color:var(--red)}
 .modal-body{padding:22px;display:flex;flex-direction:column;gap:24px}
 
-/* ── Architecture diagram ── */
-.arch-title{font-family:var(--font-h);font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+/* -- Architecture diagram -- */
+.arch-title{font-family:var(--font-h);font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
 .arch-flow{display:flex;align-items:center;gap:0;overflow-x:auto;padding-bottom:8px}
 .arch-box{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;min-width:110px;text-align:center;flex-shrink:0}
 .arch-box.highlight{border-color:rgba(252,76,2,.4);background:rgba(252,76,2,.06)}
-.arch-box.cloud{border-color:rgba(58,182,255,.3);background:rgba(58,182,255,.05)}
-.arch-box.db{border-color:rgba(157,119,245,.3);background:rgba(157,119,245,.05)}
+.arch-box.cloud{border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.05)}
+.arch-box.db{border-color:rgba(139,92,246,.3);background:rgba(139,92,246,.05)}
 .arch-box-icon{font-size:22px;margin-bottom:4px}
-.arch-box-name{font-family:var(--font-h);font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px}
-.arch-box-desc{font-size:8px;color:var(--muted);line-height:1.5}
+.arch-box-name{font-family:var(--font-h);font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px}
+.arch-box-desc{font-size:9px;color:var(--muted);line-height:1.5}
 .arch-arr{display:flex;flex-direction:column;align-items:center;gap:2px;padding:0 4px;flex-shrink:0}
-.arch-arr-line{font-size:10px;color:var(--muted)}
-.arch-arr-lbl{font-size:7px;color:var(--muted);letter-spacing:.06em;white-space:nowrap}
+.arch-arr-line{font-size:11px;color:var(--muted)}
+.arch-arr-lbl{font-size:9px;color:var(--muted);letter-spacing:.06em;white-space:nowrap}
 
-/* ── Steps ── */
+/* -- Steps -- */
 .steps{display:flex;flex-direction:column;gap:0}
 .step{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid var(--border)}
 .step:last-child{border-bottom:none}
 .step-num{width:22px;height:22px;border-radius:50%;background:var(--strava);color:#fff;font-family:var(--font-h);font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
 .step-content{}
-.step-title{font-family:var(--font-h);font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px}
-.step-desc{font-size:10px;color:var(--muted);line-height:1.7}
+.step-title{font-family:var(--font-h);font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px}
+.step-desc{font-size:11px;color:var(--muted);line-height:1.7}
 
-/* ── Code blocks ── */
-.code-block{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:10px;color:#8eacc4;line-height:1.7;overflow-x:auto;position:relative}
-.code-block .kw{color:#9d77f5}.code-block .str{color:#2dde8e}.code-block .cm{color:#3e5568}.code-block .fn{color:#3ab6ff}.code-block .nm{color:var(--accent)}
-.code-label{font-family:var(--font-h);font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+/* -- Code blocks -- */
+.code-block{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:11px;color:#475569;line-height:1.7;overflow-x:auto;position:relative}
+.code-block .kw{color:#8b5cf6}.code-block .str{color:#22c55e}.code-block .cm{color:#94a3b8}.code-block .fn{color:#3b82f6}.code-block .nm{color:var(--accent)}
+.code-label{font-family:var(--font-h);font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 
-/* ── Checklist ── */
+/* -- Checklist -- */
 .checklist{display:flex;flex-direction:column;gap:6px}
 .chk-item{display:flex;align-items:flex-start;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:9px 11px}
 .chk-icon{font-size:14px;flex-shrink:0;margin-top:1px}
 .chk-content{}
-.chk-title{font-family:var(--font-h);font-size:12px;font-weight:700;color:var(--text)}
-.chk-desc{font-size:10px;color:var(--muted);line-height:1.6;margin-top:2px}
+.chk-title{font-family:var(--font-h);font-size:13px;font-weight:700;color:var(--text)}
+.chk-desc{font-size:11px;color:var(--muted);line-height:1.6;margin-top:2px}
 
-/* ── Leaflet overrides ── */
-.leaflet-popup-content-wrapper{background:#0f1520!important;border:1px solid #1a2535!important;border-radius:8px!important;box-shadow:0 8px 24px rgba(0,0,0,.6)!important;padding:0!important}
+/* -- Leaflet overrides -- */
+.leaflet-popup-content-wrapper{background:#ffffff!important;border:1px solid #e0e4ea!important;border-radius:8px!important;box-shadow:0 4px 16px rgba(0,0,0,.1)!important;padding:0!important}
 .leaflet-popup-content{margin:0!important}
-.leaflet-popup-tip{background:#0f1520!important}
-.leaflet-popup-close-button{color:#3e5568!important;top:6px!important;right:8px!important}
-.leaflet-control-attribution{font-size:8px!important;background:rgba(7,9,13,.7)!important;color:#3e5568!important}
-.leaflet-control-attribution a{color:#3e5568!important}
+.leaflet-popup-tip{background:#ffffff!important}
+.leaflet-popup-close-button{color:#64748b!important;top:6px!important;right:8px!important}
+.leaflet-control-attribution{font-size:9px!important;background:rgba(245,247,250,.8)!important;color:#64748b!important}
+.leaflet-control-attribution a{color:#64748b!important}
 
-/* ── Tooltip ── */
-.tt{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 13px;font-family:var(--font-m);font-size:10px;color:var(--text);min-width:170px}
-.tt-hdr{color:var(--accent);font-weight:600;margin-bottom:7px;font-family:var(--font-h);font-size:13px}
+/* -- Tooltip -- */
+.tt{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:10px 13px;font-family:var(--font-m);font-size:11px;color:var(--text);min-width:180px}
+.tt-hdr{color:var(--accent);font-weight:600;margin-bottom:7px;font-family:var(--font-h);font-size:14px}
 .tt-row{display:flex;justify-content:space-between;gap:14px;color:var(--muted);margin-bottom:3px}
 .tt-row span:last-child{color:var(--text)}
-.tt-wind-badge{margin-top:6px;padding:3px 7px;border-radius:4px;font-size:9px;text-align:center;font-family:var(--font-h);font-weight:700;letter-spacing:.06em}
+.tt-wind-badge{margin-top:6px;padding:3px 7px;border-radius:4px;font-size:10px;text-align:center;font-family:var(--font-h);font-weight:700;letter-spacing:.06em}
+
+/* -- Wind arrow on map -- */
+.wind-arrow{position:absolute;top:-8px;right:-8px;width:18px;height:18px;display:flex;align-items:center;justify-content:center;opacity:.7;pointer-events:none}
+.wind-arrow svg{width:14px;height:14px}
 
 @media(max-width:680px){.sidebar{width:100%;max-height:45vh}.right-panel{min-height:0}}
 </style>
 </head>
 <body>
 
-<!-- ── Header ── -->
+<!-- -- Header -- -->
 <header>
   <div>
     <div class="logo">Route<em>Weather</em><sup>PRO</sup></div>
@@ -263,10 +269,10 @@ input[type=number]::-webkit-inner-spin-button{opacity:.3}
 </header>
 
 <main>
-<!-- ══ SIDEBAR ══ -->
+<!-- SIDEBAR -->
 <aside class="sidebar">
 
-  <!-- §1 Strava -->
+  <!-- S1 Strava -->
   <div class="sec-hdr" onclick="toggleSec('sec-strava')">
     <span class="sec-label" data-i18n="sec_strava">01 &#8212; Connect Strava</span>
     <span class="sec-chevron open" id="chv-strava">&#9662;</span>
@@ -290,12 +296,12 @@ input[type=number]::-webkit-inner-spin-button{opacity:.3}
 
     <!-- Strava route list (appears after connection) -->
     <div id="stravaRouteSection" style="display:none">
-      <div style="font-family:var(--font-h);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--strava);margin-bottom:6px;padding-top:4px" data-i18n="strava_your_routes">&#128692; Your Strava Routes</div>
+      <div style="font-family:var(--font-h);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--strava);margin-bottom:6px;padding-top:4px" data-i18n="strava_your_routes">&#128692; Your Strava Routes</div>
       <div class="strava-route-list" id="stravaRouteList"></div>
     </div>
   </div>
 
-  <!-- §2 Route -->
+  <!-- S2 Route -->
   <div class="sec-hdr" onclick="toggleSec('sec-route')">
     <span class="sec-label" data-i18n="sec_route">02 &#8212; Load Route</span>
     <span class="sec-chevron open" id="chv-route">&#9662;</span>
@@ -319,7 +325,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.3}
     <div class="err" id="errBanner"></div>
   </div>
 
-  <!-- §3 Ride Details -->
+  <!-- S3 Ride Details -->
   <div class="sec-hdr" onclick="toggleSec('sec-ride')">
     <span class="sec-label" data-i18n="sec_ride">03 &#8212; Ride Details</span>
     <span class="sec-chevron open" id="chv-ride">&#9662;</span>
@@ -373,7 +379,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.3}
 
 </aside>
 
-<!-- ══ RIGHT PANEL ══ -->
+<!-- RIGHT PANEL -->
 <div class="right-panel">
   <div class="map-wrap">
     <div id="map">
@@ -401,10 +407,10 @@ input[type=number]::-webkit-inner-spin-button{opacity:.3}
 </div>
 </main>
 
-<!-- ══ Toast ══ -->
+<!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<!-- ══ STRAVA MODAL ══ -->
+<!-- STRAVA MODAL -->
 <div class="modal-overlay" id="stravaModal" onclick="closeModalOutside(event,'stravaModal')">
 <div class="modal">
   <div class="modal-hdr">
@@ -589,9 +595,9 @@ window.location.<span class="nm">href</span> = authUrl.<span class="fn">toString
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
-// ══════════════════════════════════════════════════
+// ======================================================
 // i18n SYSTEM
-// ══════════════════════════════════════════════════
+// ======================================================
 let currentLang = 'en';
 
 const i18n = {
@@ -621,6 +627,7 @@ const i18n = {
     strava_error_no_polyline: 'This route has no polyline data.',
     strava_error_fetch: 'Failed to fetch Strava routes.',
     strava_error_token: 'Failed to exchange code for token.',
+    strava_load_more: 'Load more routes',
     drop_strong: 'Drop a GPX file',
     drop_sub: 'or click to browse',
     btn_demo: '🚴 Load demo route (Salamanca loop)',
@@ -646,6 +653,7 @@ const i18n = {
     card_temp_sub: 'along route',
     card_rain_sub: 'max probability',
     card_cond_sub: 'overall riding',
+    card_feels_sub: 'feels like',
     map_empty: 'Load a GPX to begin',
     loading_weather: 'Fetching Weather',
     loading_sampling: 'Sampling route…',
@@ -685,6 +693,7 @@ const i18n = {
     cond_mixed: '⚠ Mixed',
     cond_tough: '🌧 Tough',
     popup_temp: '🌡 Temp',
+    popup_feels: 'Feels like',
     popup_rain: '🌧 Rain',
     popup_wind: '💨 Wind',
     popup_grad: '⚡ Grad.',
@@ -748,6 +757,7 @@ const i18n = {
     strava_error_no_polyline: 'Esta ruta no tiene datos de polílínea.',
     strava_error_fetch: 'Error al obtener las rutas de Strava.',
     strava_error_token: 'Error al intercambiar el código por el token.',
+    strava_load_more: 'Cargar más rutas',
     drop_strong: 'Arrastra un archivo GPX',
     drop_sub: 'o haz clic para buscar',
     btn_demo: '🚴 Cargar ruta demo (bucle Salamanca)',
@@ -773,6 +783,7 @@ const i18n = {
     card_temp_sub: 'a lo largo de la ruta',
     card_rain_sub: 'probabilidad máxima',
     card_cond_sub: 'para pedalear',
+    card_feels_sub: 'sensación térmica',
     map_empty: 'Carga un GPX para comenzar',
     loading_weather: 'Obteniendo Clima',
     loading_sampling: 'Muestreando ruta…',
@@ -812,6 +823,7 @@ const i18n = {
     cond_mixed: '⚠ Mixto',
     cond_tough: '🌧 Difícil',
     popup_temp: '🌡 Temp',
+    popup_feels: 'Sensación térmica',
     popup_rain: '🌧 Lluvia',
     popup_wind: '💨 Viento',
     popup_grad: '⚡ Pend.',
@@ -895,9 +907,9 @@ function applyTranslations() {
   }
 }
 
-// ══════════════════════════════════════════════════
+// ======================================================
 // POLYLINE DECODER (Google's Encoded Polyline Algorithm)
-// ══════════════════════════════════════════════════
+// ======================================================
 function decodePolyline(encoded) {
   const points = [];
   let index = 0, lat = 0, lng = 0;
@@ -926,16 +938,17 @@ function decodePolyline(encoded) {
   return points;
 }
 
-// ══════════════════════════════════════════════════
+// ======================================================
 // STRAVA INTEGRATION (via backend)
-// ══════════════════════════════════════════════════
+// ======================================================
 // IMPORTANT: Set this to your backend URL
 const BACKEND_URL = 'https://routeweather-backend.onrender.com';
 
 let stravaState = {
   accessToken: null,
   athleteName: null,
-  routes: []
+  routes: [],
+  displayCount: 15
 };
 
 function stravaConnect() {
@@ -993,6 +1006,7 @@ function stravaDisconnect() {
   stravaState.accessToken = null;
   stravaState.athleteName = null;
   stravaState.routes = [];
+  stravaState.displayCount = 15;
 
   document.getElementById('stravaStatus').className = 'strava-status';
   document.getElementById('stravaConnectBtn').style.display = '';
@@ -1015,31 +1029,53 @@ async function stravaFetchRoutes() {
 
     const routes = await res.json();
     stravaState.routes = routes;
+    stravaState.displayCount = 15;
 
     if (!routes.length) {
       listEl.innerHTML = '<div class="strava-routes-empty">' + t('strava_no_routes') + '</div>';
       return;
     }
 
-    listEl.innerHTML = '';
-    routes.forEach(route => {
-      const distKm = (route.distance / 1000).toFixed(1);
-      const eleGain = Math.round(route.elevation_gain || 0);
-      const item = document.createElement('div');
-      item.className = 'strava-route-item';
-      item.innerHTML =
-        '<div class="strava-route-name">' + escHtml(route.name) + '</div>' +
-        '<div class="strava-route-meta">' +
-          '<span>📏 ' + distKm + ' km</span>' +
-          '<span>⬆️ ' + eleGain + ' m</span>' +
-        '</div>';
-      item.addEventListener('click', () => stravaLoadRoute(route));
-      listEl.appendChild(item);
-    });
+    stravaRenderRoutes();
 
   } catch (err) {
     console.error('Strava routes error:', err);
     listEl.innerHTML = '<div class="strava-routes-empty" style="color:var(--red)">' + t('strava_error_fetch') + '</div>';
+  }
+}
+
+function stravaRenderRoutes() {
+  const listEl = document.getElementById('stravaRouteList');
+  const routes = stravaState.routes;
+  const showing = Math.min(stravaState.displayCount, routes.length);
+
+  listEl.innerHTML = '';
+  for (let ri = 0; ri < showing; ri++) {
+    const route = routes[ri];
+    const distKm = (route.distance / 1000).toFixed(1);
+    const eleGain = Math.round(route.elevation_gain || 0);
+    const item = document.createElement('div');
+    item.className = 'strava-route-item';
+    item.innerHTML =
+      '<div class="strava-route-name">' + escHtml(route.name) + '</div>' +
+      '<div class="strava-route-meta">' +
+        '<span>📏 ' + distKm + ' km</span>' +
+        '<span>⬆️ ' + eleGain + ' m</span>' +
+      '</div>';
+    item.addEventListener('click', () => stravaLoadRoute(route));
+    listEl.appendChild(item);
+  }
+
+  // Add Load More button if there are more routes
+  if (showing < routes.length) {
+    const btn = document.createElement('button');
+    btn.className = 'btn-load-more';
+    btn.textContent = t('strava_load_more') + ' (' + (routes.length - showing) + ' more)';
+    btn.addEventListener('click', () => {
+      stravaState.displayCount += 15;
+      stravaRenderRoutes();
+    });
+    listEl.appendChild(btn);
   }
 }
 
@@ -1095,9 +1131,9 @@ function escHtml(s) {
   return d.innerHTML;
 }
 
-// ══════════════════════════════════════════════════
+// ======================================================
 // CONSTANTS & STATE
-// ══════════════════════════════════════════════════
+// ======================================================
 const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast';
 const ARCHIVE_URL  = 'https://archive-api.open-meteo.com/v1/archive';
 const SAMPLE_KM    = 5;
@@ -1118,9 +1154,9 @@ let st = {
 
 let map = null;
 
-// ══════════════════════════════════════════════════
+// ======================================================
 // INIT
-// ══════════════════════════════════════════════════
+// ======================================================
 document.addEventListener('DOMContentLoaded', () => {
   initMap();
   setDefaultTime();
@@ -1145,7 +1181,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function initMap() {
   map = L.map('map', { zoomControl: true }).setView([40.97, -5.66], 5);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
     { attribution: '© CartoDB © OSM', maxZoom: 19 }).addTo(map);
   document.getElementById('mapEmpty').style.display = 'flex';
 }
@@ -1155,9 +1191,9 @@ function setDefaultTime() {
   document.getElementById('startTime').value = new Date(d - d.getTimezoneOffset()*60000).toISOString().slice(0,16);
 }
 
-// ══════════════════════════════════════════════════
+// ======================================================
 // SECTION TOGGLE
-// ══════════════════════════════════════════════════
+// ======================================================
 function toggleSec(id) {
   const body = document.getElementById(id);
   const chv  = document.getElementById('chv-' + id.replace('sec-',''));
@@ -1165,9 +1201,9 @@ function toggleSec(id) {
   chv.classList.toggle('open');
 }
 
-// ══════════════════════════════════════════════════
+// ======================================================
 // GPX PARSING
-// ══════════════════════════════════════════════════
+// ======================================================
 function processFile(file) {
   if (!file.name.toLowerCase().endsWith('.gpx')) { showErr(t('toast_gpx_error')); return; }
   const r = new FileReader();
@@ -1189,9 +1225,9 @@ function parseGPX(text, filename) {
   loadRoute(pts, filename.replace(/\.gpx$/i,'').replace(/[_-]/g,' '));
 }
 
-// ══════════════════════════════════════════════════
+// ======================================================
 // DEMO ROUTE (Salamanca loop ~55km)
-// ══════════════════════════════════════════════════
+// ======================================================
 function loadDemoRoute() {
   const c = {lat:40.970, lon:-5.664};
   const N = 40;
@@ -1233,14 +1269,14 @@ function loadRoute(pts, name) {
   clearMap();
   document.getElementById('mapEmpty').style.display = 'none';
   const ll = pts.map(p => [p.lat,p.lon]);
-  const base = L.polyline(ll, {color:'#1e3040',weight:4}).addTo(map);
+  const base = L.polyline(ll, {color:'#cbd5e1',weight:4}).addTo(map);
   st.mapLayers.push(base);
   map.fitBounds(base.getBounds(), {padding:[30,30]});
 }
 
-// ══════════════════════════════════════════════════
-// FEATURE 1 — GRADIENT-ADJUSTED SPEED & TIMELINE
-// ══════════════════════════════════════════════════
+// ======================================================
+// FEATURE 1 -- GRADIENT-ADJUSTED SPEED & TIMELINE
+// ======================================================
 function gradSpeed(baseKmh, grad, profile) {
   const p = RIDER[profile] || RIDER.recreational;
   if (grad >= 0) return baseKmh / (1 + p.kUp * grad);
@@ -1263,9 +1299,9 @@ function buildTimeline(pts, baseKmh, profile) {
   return tl;
 }
 
-// ══════════════════════════════════════════════════
-// FEATURE 2 — BEARING & RELATIVE WIND
-// ══════════════════════════════════════════════════
+// ======================================================
+// FEATURE 2 -- BEARING & RELATIVE WIND
+// ======================================================
 function bearing(a, b) {
   const la1=a.lat*Math.PI/180, la2=b.lat*Math.PI/180;
   const dl=(b.lon-a.lon)*Math.PI/180;
@@ -1302,14 +1338,14 @@ function windAdjustedSpeed(baseKmh, tailComp) {
   return Math.max(5, baseKmh + tailComp*0.4); // tailComp negative = headwind
 }
 
-// ══════════════════════════════════════════════════
-// FEATURE 3 — WEATHER FETCH WITH HISTORICAL FALLBACK
-// ══════════════════════════════════════════════════
+// ======================================================
+// FEATURE 3 -- WEATHER FETCH WITH HISTORICAL FALLBACK
+// ======================================================
 function weatherUrl(lat, lon, dateStr, historical) {
   const base = historical ? ARCHIVE_URL : FORECAST_URL;
   const vars = historical
-    ? 'temperature_2m,precipitation,windspeed_10m,winddirection_10m,weathercode'
-    : 'temperature_2m,precipitation_probability,precipitation,windspeed_10m,winddirection_10m,weathercode';
+    ? 'temperature_2m,apparent_temperature,precipitation,windspeed_10m,winddirection_10m,weathercode'
+    : 'temperature_2m,apparent_temperature,precipitation_probability,precipitation,windspeed_10m,winddirection_10m,weathercode';
   return `${base}?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&hourly=${vars}&start_date=${dateStr}&end_date=${dateStr}&timezone=UTC&wind_speed_unit=kmh`;
 }
 
@@ -1331,20 +1367,21 @@ async function fetchWx(lat, lon, arrivalTime, historical, retries=3) {
     let hi = d.hourly.time.findIndex(t => new Date(t+'Z').getUTCHours()===utcHour);
     if (hi<0) hi = utcHour;
     return {
-      temp:    d.hourly.temperature_2m?.[hi] ?? null,
-      rainPct: historical ? null : (d.hourly.precipitation_probability?.[hi] ?? 0),
-      rainMm:  d.hourly.precipitation?.[hi] ?? 0,
-      windSpd: d.hourly.windspeed_10m?.[hi]    ?? null,
-      windDir: d.hourly.winddirection_10m?.[hi]?? null,
-      code:    d.hourly.weathercode?.[hi]       ?? 0,
+      temp:      d.hourly.temperature_2m?.[hi] ?? null,
+      feelsLike: d.hourly.apparent_temperature?.[hi] ?? null,
+      rainPct:   historical ? null : (d.hourly.precipitation_probability?.[hi] ?? 0),
+      rainMm:    d.hourly.precipitation?.[hi] ?? 0,
+      windSpd:   d.hourly.windspeed_10m?.[hi]    ?? null,
+      windDir:   d.hourly.winddirection_10m?.[hi]?? null,
+      code:      d.hourly.weathercode?.[hi]       ?? 0,
     };
   }
   throw new Error('Rate limited (429) — too many requests. Please wait a moment and try again.');
 }
 
-// ══════════════════════════════════════════════════
+// ======================================================
 // ROUTE SAMPLING
-// ══════════════════════════════════════════════════
+// ======================================================
 function sampleTimeline(tl, intervalKm) {
   const samples = [], totalDist = tl[tl.length-1].dist;
   let next = 0;
@@ -1366,9 +1403,9 @@ function downsample(arr, max) {
   return arr.filter((_,i)=> i%step===0 || i===arr.length-1);
 }
 
-// ══════════════════════════════════════════════════
+// ======================================================
 // MAIN ANALYSIS
-// ══════════════════════════════════════════════════
+// ======================================================
 async function runAnalysis() {
   if (!st.rawPts.length) { showErr(t('toast_route_first')); return; }
   const startInput = document.getElementById('startTime').value;
@@ -1469,16 +1506,16 @@ async function runAnalysis() {
   }
 }
 
-// ══════════════════════════════════════════════════
+// ======================================================
 // MAP RENDERING
-// ══════════════════════════════════════════════════
+// ======================================================
 function condColor(rainPct, windSpd, historical) {
   // For historical: use rainMm instead of pct
   const r = rainPct ?? 0, w = windSpd ?? 0;
-  if (r >= 60 || w >= 50) return '#ff3d6b';
-  if (r >= 35 || w >= 35) return '#ff7c35';
-  if (r >= 15 || w >= 20) return '#ffd43b';
-  return '#b8f400';
+  if (r >= 60 || w >= 50) return '#ef4444';
+  if (r >= 35 || w >= 35) return '#f97316';
+  if (r >= 15 || w >= 20) return '#eab308';
+  return '#22c55e';
 }
 
 function clearMap() {
@@ -1487,11 +1524,18 @@ function clearMap() {
   if (st.markerGrp) { map.removeLayer(st.markerGrp); st.markerGrp=null; }
 }
 
+function windSpeedColor(spd) {
+  if (spd == null || spd < 10) return '#94a3b8';
+  if (spd < 20) return '#64748b';
+  if (spd < 35) return '#f97316';
+  return '#ef4444';
+}
+
 function renderRoute() {
   clearMap();
 
-  // Base route (grey)
-  const base = L.polyline(st.rawPts.map(p=>[p.lat,p.lon]),{color:'#1e3040',weight:4,opacity:.6}).addTo(map);
+  // Base route (light grey)
+  const base = L.polyline(st.rawPts.map(p=>[p.lat,p.lon]),{color:'#cbd5e1',weight:4,opacity:.6}).addTo(map);
   st.mapLayers.push(base);
 
   // Colored segments between waypoints
@@ -1515,9 +1559,20 @@ function renderRoute() {
       st.isHistorical ? (wp.rainMm>0?60:0) : wp.rainPct,
       wp.windSpd, st.isHistorical
     );
+
+    // Wind arrow rotation: windDir is where wind comes FROM, arrow points where it blows TO
+    const arrowRot = wp.windDir != null ? (wp.windDir + 180) % 360 : 0;
+    const arrowColor = windSpeedColor(wp.windSpd);
+    const hasWind = wp.windDir != null && wp.windSpd != null && wp.windSpd > 0;
+
     const icon = L.divIcon({
-      html:`<div style="width:10px;height:10px;border-radius:50%;background:${color};border:2px solid #07090d;box-shadow:0 0 8px ${color}88"></div>`,
-      iconSize:[10,10],className:''
+      html:`<div style="position:relative;width:18px;height:18px">` +
+        `<div style="width:12px;height:12px;border-radius:50%;background:${color};border:2px solid #ffffff;box-shadow:0 1px 4px ${color}66;position:absolute;top:3px;left:3px"></div>` +
+        (hasWind ? `<div style="position:absolute;top:-10px;left:1px;width:16px;height:16px;transform:rotate(${arrowRot}deg);opacity:.65;pointer-events:none">` +
+          `<svg viewBox="0 0 16 16" width="16" height="16"><path d="M8 1 L11 7 L9 6 L9 15 L7 15 L7 6 L5 7 Z" fill="${arrowColor}" stroke="#fff" stroke-width="0.5"/></svg>` +
+        `</div>` : '') +
+      `</div>`,
+      iconSize:[18,18],iconAnchor:[9,9],className:''
     });
     L.marker([wp.lat,wp.lon],{icon}).addTo(st.markerGrp).bindPopup(buildPopup(wp),{className:''});
   });
@@ -1546,9 +1601,11 @@ function buildPopup(wp) {
   } else {
     rainStr = t('rain_pct_mm', { pct: (wp.rainPct ?? '—'), mm: (wp.rainMm?.toFixed(1) ?? '0') });
   }
+  const tempStr = wp.temp!=null ? wp.temp.toFixed(1)+'°C' : '—';
+  const feelsStr = wp.feelsLike!=null ? ' (' + t('popup_feels').toLowerCase() + ' ' + wp.feelsLike.toFixed(1) + '°)' : '';
   return `<div class="tt">
     <div class="tt-hdr">${wmoEmoji(wp.code)} ${wp.dist.toFixed(1)} km · ${fmtTime(wp.arrivalTime)}</div>
-    <div class="tt-row"><span>${t('popup_temp')}</span><span>${wp.temp!=null?wp.temp.toFixed(1)+'°C':'—'}</span></div>
+    <div class="tt-row"><span>${t('popup_temp')}</span><span>${tempStr}${feelsStr}</span></div>
     <div class="tt-row"><span>${t('popup_rain')}</span><span>${rainStr}</span></div>
     <div class="tt-row"><span>${t('popup_wind')}</span><span>${wp.windSpd!=null?wp.windSpd.toFixed(0):0} km/h ${windArr(wp.windDir)} ${windLabel(wp.windDir)}</span></div>
     <div class="tt-row"><span>${t('popup_grad')}</span><span>${wp.gradient?.toFixed(1)??0}%</span></div>
@@ -1556,18 +1613,28 @@ function buildPopup(wp) {
   </div>`;
 }
 
-// ══════════════════════════════════════════════════
+// ======================================================
 // SUMMARY CARDS
-// ══════════════════════════════════════════════════
+// ======================================================
 function renderCards() {
   const wps = st.waypoints;
   const temps  = wps.map(w=>w.temp).filter(v=>v!=null);
+  const feels  = wps.map(w=>w.feelsLike).filter(v=>v!=null);
   const rains  = st.isHistorical ? wps.map(w=>w.rainMm>0.1?60:5) : wps.map(w=>w.rainPct??0);
   const winds  = wps.map(w=>w.windSpd??0);
   const tmin   = Math.min(...temps).toFixed(1), tmax=Math.max(...temps).toFixed(1);
   const rMax   = Math.max(...rains), wMax=Math.max(...winds).toFixed(0);
 
   document.getElementById('sc-temp').textContent     = `${tmin}–${tmax}°C`;
+
+  // Show feels-like range below temp
+  if (feels.length) {
+    const fmin = Math.min(...feels).toFixed(1), fmax = Math.max(...feels).toFixed(1);
+    document.getElementById('sc-temp-sub').textContent = t('card_feels_sub') + ': ' + fmin + '–' + fmax + '°C';
+  } else {
+    document.getElementById('sc-temp-sub').textContent = t('card_temp_sub');
+  }
+
   document.getElementById('sc-rain').textContent     = st.isHistorical ? (wps.some(w=>w.rainMm>0.5)?t('rain_label'):t('dry_label')) : `${rMax}%`;
   document.getElementById('sc-rain-sub').textContent = st.isHistorical ? t('rain_actual') : (rMax>50 ? t('rain_expect') : rMax>20 ? t('rain_some') : t('rain_dry'));
   document.getElementById('sc-wind').textContent     = `${wMax} km/h`;
@@ -1578,9 +1645,9 @@ function renderCards() {
   document.getElementById('sc-cond').textContent = rMax<20&&wMax<25 ? t('cond_good') : rMax<40&&wMax<35 ? t('cond_mixed') : t('cond_tough');
 }
 
-// ══════════════════════════════════════════════════
+// ======================================================
 // WAYPOINT LIST
-// ══════════════════════════════════════════════════
+// ======================================================
 function renderWaypoints() {
   const list = document.getElementById('wpList');
   list.innerHTML = '';
@@ -1589,6 +1656,8 @@ function renderWaypoints() {
     const rw    = wp.relWind || {};
     const rwClass = rw.type==='tail'?'hw-tail':rw.type==='head'?'hw-head':'hw-cross';
     const rainDisp = st.isHistorical ? `${(wp.rainMm??0).toFixed(1)}mm` : `${wp.rainPct??0}%`;
+    const tempDisp = wp.temp!=null ? wp.temp.toFixed(1)+'°' : '—';
+    const feelsDisp = wp.feelsLike!=null ? ' / '+wp.feelsLike.toFixed(1)+'°' : '';
     const el = document.createElement('div');
     el.className = 'wp-item';
     el.innerHTML = `
@@ -1596,7 +1665,7 @@ function renderWaypoints() {
       <span class="w-icon">${wmoEmoji(wp.code)}</span>
       <span class="w-dist">${wp.dist.toFixed(0)}km</span>
       <span class="w-time">${fmtTime(wp.arrivalTime)}</span>
-      <span class="w-temp">${wp.temp!=null?wp.temp.toFixed(1)+'°':'—'}</span>
+      <span class="w-temp">${tempDisp}${feelsDisp}</span>
       <span class="w-wind">${rw.label?`<span class="headwind-pill ${rwClass}">${rw.label}</span>`:'—'}</span>
       <span class="w-rain" style="color:var(--blue)">${rainDisp}</span>`;
     el.addEventListener('click', () => map.setView([wp.lat,wp.lon],13));
@@ -1604,9 +1673,9 @@ function renderWaypoints() {
   });
 }
 
-// ══════════════════════════════════════════════════
+// ======================================================
 // CHARTS
-// ══════════════════════════════════════════════════
+// ======================================================
 function switchChart(type, btn) {
   document.querySelectorAll('.ctab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
@@ -1624,99 +1693,99 @@ function renderChart(type) {
     responsive:true, maintainAspectRatio:false,
     animation:{duration:400},
     plugins:{ legend:{display:false}, tooltip:{
-      backgroundColor:'#0f1520', borderColor:'#1a2535', borderWidth:1,
-      titleColor:'#b8f400', bodyColor:'#3e5568',
+      backgroundColor:'#ffffff', borderColor:'#e0e4ea', borderWidth:1,
+      titleColor:'#2563eb', bodyColor:'#64748b',
       titleFont:{family:"'JetBrains Mono'",size:10},
       bodyFont:{family:"'JetBrains Mono'",size:10}
     }},
     scales:{
-      x:{ grid:{color:'rgba(255,255,255,.04)'}, ticks:{color:'#3e5568',font:{family:"'JetBrains Mono'",size:9},maxTicksLimit:10} },
-      y:{ grid:{color:'rgba(255,255,255,.04)'}, ticks:{font:{family:"'JetBrains Mono'",size:9}} }
+      x:{ grid:{color:'rgba(0,0,0,.06)'}, ticks:{color:'#64748b',font:{family:"'JetBrains Mono'",size:9},maxTicksLimit:10} },
+      y:{ grid:{color:'rgba(0,0,0,.06)'}, ticks:{font:{family:"'JetBrains Mono'",size:9}} }
     }
   };
 
   let datasets, yColor;
 
   if (type==='temp') {
-    yColor='#ff7c35';
-    datasets=[{label:'°C',data:wps.map(w=>w.temp?.toFixed(1)),
-      borderColor:'#ff7c35',backgroundColor:'rgba(255,124,53,.12)',fill:true,
-      tension:.4,pointRadius:4,pointBackgroundColor:'#ff7c35'}];
+    yColor='#f97316';
+    datasets=[{label:'°C',data:wps.map(w=>w.temp ?? 0),
+      borderColor:'#f97316',backgroundColor:'rgba(249,115,22,.12)',fill:true,
+      tension:.4,pointRadius:4,pointBackgroundColor:'#f97316'}];
     baseOpts.scales.y.ticks.color=yColor;
 
   } else if (type==='rain') {
-    yColor='#3ab6ff';
+    yColor='#3b82f6';
     if (st.isHistorical) {
-      datasets=[{label:'Rain (mm)',data:wps.map(w=>(w.rainMm??0).toFixed(2)),
-        borderColor:'#3ab6ff',backgroundColor:'rgba(58,182,255,.15)',fill:true,
-        tension:.3,pointRadius:4,pointBackgroundColor:'#3ab6ff'}];
+      datasets=[{label:'Rain (mm)',data:wps.map(w=>w.rainMm ?? 0),
+        borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.15)',fill:true,
+        tension:.3,pointRadius:4,pointBackgroundColor:'#3b82f6'}];
     } else {
       datasets=[
-        {label:'Prob (%)',data:wps.map(w=>w.rainPct??0),borderColor:'#3ab6ff',
-          backgroundColor:'rgba(58,182,255,.12)',fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#3ab6ff',yAxisID:'y'},
-        {label:'mm',data:wps.map(w=>(w.rainMm??0).toFixed(2)),borderColor:'#0ea5e9',
+        {label:'Prob (%)',data:wps.map(w=>w.rainPct??0),borderColor:'#3b82f6',
+          backgroundColor:'rgba(59,130,246,.12)',fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#3b82f6',yAxisID:'y'},
+        {label:'mm',data:wps.map(w=>w.rainMm ?? 0),borderColor:'#0ea5e9',
           backgroundColor:'rgba(14,165,233,.06)',fill:true,tension:.3,pointRadius:3,pointBackgroundColor:'#0ea5e9',yAxisID:'y2',borderDash:[4,3]}
       ];
       baseOpts.scales.y2={position:'right',grid:{drawOnChartArea:false},
         ticks:{color:'#0ea5e9',font:{family:"'JetBrains Mono'",size:9}},
-        title:{display:true,text:'mm',color:'#3e5568',font:{size:9}}};
+        title:{display:true,text:'mm',color:'#64748b',font:{size:9}}};
     }
     baseOpts.scales.y.ticks.color=yColor;
 
   } else if (type==='wind') {
-    yColor='#9d77f5';
-    datasets=[{label:'Wind (km/h)',data:wps.map(w=>(w.windSpd??0).toFixed(0)),
-      borderColor:'#9d77f5',backgroundColor:'rgba(157,119,245,.12)',fill:true,
-      tension:.4,pointRadius:4,pointBackgroundColor:'#9d77f5'}];
+    yColor='#8b5cf6';
+    datasets=[{label:'Wind (km/h)',data:wps.map(w=>w.windSpd ?? 0),
+      borderColor:'#8b5cf6',backgroundColor:'rgba(139,92,246,.12)',fill:true,
+      tension:.4,pointRadius:4,pointBackgroundColor:'#8b5cf6'}];
     baseOpts.scales.y.ticks.color=yColor;
 
   } else if (type==='relwind') {
-    yColor='#2dde8e';
+    yColor='#22c55e';
     datasets=[
       {label:'Tailwind (+) / Headwind (−)',
-        data:wps.map(w=>w.relWind?.tailwind?.toFixed(1)??0),
+        data:wps.map(w=>w.relWind?.tailwind ?? 0),
         borderColor:(ctx2,meta)=>{
           const val = meta.dataset.data[meta.dataIndex];
-          return val>0?'#2dde8e':'#ff3d6b';
+          return val>0?'#22c55e':'#ef4444';
         },
-        segment:{borderColor:ctx2=>ctx2.p1.parsed.y>=0?'#2dde8e':'#ff3d6b'},
-        backgroundColor:'rgba(45,222,142,.08)',fill:false,
+        segment:{borderColor:ctx2=>ctx2.p1.parsed.y>=0?'#22c55e':'#ef4444'},
+        backgroundColor:'rgba(34,197,94,.08)',fill:false,
         tension:.3,pointRadius:4,
-        pointBackgroundColor:wps.map(w=>(w.relWind?.tailwind??0)>=0?'#2dde8e':'#ff3d6b')
+        pointBackgroundColor:wps.map(w=>(w.relWind?.tailwind??0)>=0?'#22c55e':'#ef4444')
       },
-      {label:'Crosswind',data:wps.map(w=>(w.relWind?.crosswind??0).toFixed(1)),
-        borderColor:'#ffd43b',backgroundColor:'rgba(255,212,59,.06)',fill:false,
-        tension:.3,pointRadius:3,pointBackgroundColor:'#ffd43b',borderDash:[4,3],yAxisID:'y2'}
+      {label:'Crosswind',data:wps.map(w=>w.relWind?.crosswind ?? 0),
+        borderColor:'#eab308',backgroundColor:'rgba(234,179,8,.06)',fill:false,
+        tension:.3,pointRadius:3,pointBackgroundColor:'#eab308',borderDash:[4,3],yAxisID:'y2'}
     ];
     baseOpts.scales.y.ticks.color=yColor;
     baseOpts.scales.y2={position:'right',grid:{drawOnChartArea:false},
-      ticks:{color:'#ffd43b',font:{family:"'JetBrains Mono'",size:9}},
-      title:{display:true,text:'Cross (km/h)',color:'#3e5568',font:{size:9}}};
+      ticks:{color:'#eab308',font:{family:"'JetBrains Mono'",size:9}},
+      title:{display:true,text:'Cross (km/h)',color:'#64748b',font:{size:9}}};
     // Add zero line
-    baseOpts.scales.y.grid.color=ctx2=>ctx2.tick.value===0?'rgba(255,255,255,.2)':'rgba(255,255,255,.04)';
+    baseOpts.scales.y.grid.color=ctx2=>ctx2.tick.value===0?'rgba(0,0,0,.15)':'rgba(0,0,0,.06)';
 
   } else if (type==='elev') {
-    yColor='#3ab6ff';
+    yColor='#3b82f6';
     datasets=[
-      {label:'Elevation (m)',data:wps.map(w=>w.ele?.toFixed(0)??0),
-        borderColor:'#3ab6ff',backgroundColor:'rgba(58,182,255,.12)',fill:true,
-        tension:.4,pointRadius:3,pointBackgroundColor:'#3ab6ff',yAxisID:'y'},
-      {label:'Gradient-adj Speed (km/h)',data:wps.map(w=>(w.effSpeed??w.speed??0).toFixed(1)),
-        borderColor:'#b8f400',backgroundColor:'rgba(184,244,0,.05)',fill:false,
-        tension:.4,pointRadius:3,pointBackgroundColor:'#b8f400',borderDash:[3,3],yAxisID:'y2'}
+      {label:'Elevation (m)',data:wps.map(w=>w.ele ?? 0),
+        borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.12)',fill:true,
+        tension:.4,pointRadius:3,pointBackgroundColor:'#3b82f6',yAxisID:'y'},
+      {label:'Gradient-adj Speed (km/h)',data:wps.map(w=>w.effSpeed ?? w.speed ?? 0),
+        borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,.05)',fill:false,
+        tension:.4,pointRadius:3,pointBackgroundColor:'#2563eb',borderDash:[3,3],yAxisID:'y2'}
     ];
     baseOpts.scales.y.ticks.color=yColor;
     baseOpts.scales.y2={position:'right',grid:{drawOnChartArea:false},
-      ticks:{color:'#b8f400',font:{family:"'JetBrains Mono'",size:9}},
-      title:{display:true,text:'km/h',color:'#3e5568',font:{size:9}}};
+      ticks:{color:'#2563eb',font:{family:"'JetBrains Mono'",size:9}},
+      title:{display:true,text:'km/h',color:'#64748b',font:{size:9}}};
   }
 
   st.chart = new Chart(ctx, {type:'line', data:{labels:xLbls, datasets}, options:baseOpts});
 }
 
-// ══════════════════════════════════════════════════
-// FEATURE 4 — NOTIFICATIONS
-// ══════════════════════════════════════════════════
+// ======================================================
+// FEATURE 4 -- NOTIFICATIONS
+// ======================================================
 async function handleNotif() {
   const btn = document.getElementById('notifBtn');
   if (!st.waypoints.length) return;
@@ -1765,16 +1834,16 @@ function buildNotifSummary() {
   return `${Math.min(...temps).toFixed(0)}–${Math.max(...temps).toFixed(0)}°C · ${maxRain} · Wind up to ${Math.max(...winds).toFixed(0)} km/h`;
 }
 
-// ══════════════════════════════════════════════════
+// ======================================================
 // MODAL
-// ══════════════════════════════════════════════════
+// ======================================================
 function openModal(id)  { document.getElementById(id).classList.add('vis'); }
 function closeModal(id) { document.getElementById(id).classList.remove('vis'); }
 function closeModalOutside(e,id){ if(e.target===document.getElementById(id)) closeModal(id); }
 
-// ══════════════════════════════════════════════════
+// ======================================================
 // HELPERS
-// ══════════════════════════════════════════════════
+// ======================================================
 function hav(a,b) {
   const R=6371,dl=(b.lat-a.lat)*Math.PI/180,dl2=(b.lon-a.lon)*Math.PI/180;
   const x=Math.sin(dl/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dl2/2)**2;
