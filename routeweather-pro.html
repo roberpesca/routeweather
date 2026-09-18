@@ -415,6 +415,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.3}
       <div class="drop-icon">&#128506;&#65039;</div>
       <div class="drop-txt"><strong data-i18n="drop_strong">Arrastra un archivo GPX</strong><br/><span data-i18n="drop_sub">o haz clic para buscar</span></div>
     </div>
+    <button type="button" class="btn-load-more" id="demoRouteBtn" onclick="loadDemoRoute()" data-i18n="btn_demo">&#128692; Cargar ruta demo (bucle Salamanca)</button>
     <div class="route-card" id="routeCard">
       <div class="rc-name" id="rcName">&#8212;</div>
       <div class="rc-meta">
@@ -840,6 +841,7 @@ const i18n = {
     toast_route_first: 'Load a route first.',
     toast_set_time: 'Set a start date/time.',
     toast_invalid_speed: 'Invalid speed.',
+    toast_forecast_too_far: 'That date is too far ahead — forecasts are only available up to ~16 days out.',
     toast_weather_fail: 'Weather fetch failed: {msg}',
     notif_title: '🚴 RouteWeather — Pre-Ride Alert',
     notif_btn_scheduled: '🔔 Notification set for {time}',
@@ -1069,6 +1071,7 @@ const i18n = {
     toast_route_first: 'Carga una ruta primero.',
     toast_set_time: 'Establece una fecha y hora de inicio.',
     toast_invalid_speed: 'Velocidad inválida.',
+    toast_forecast_too_far: 'Esa fecha está demasiado lejos — el pronóstico solo llega a ~16 días vista.',
     toast_weather_fail: 'Error al obtener el clima: {msg}',
     notif_title: '🚴 RouteWeather — Alerta Pre-Recorrido',
     notif_btn_scheduled: '🔔 Notificación fijada para {time}',
@@ -1293,7 +1296,7 @@ function decodePolyline(encoded) {
 // STRAVA INTEGRATION (via backend)
 // ======================================================
 // IMPORTANT: Set this to your backend URL
-const BACKEND_URL = 'https://routeweather-backend.onrender.com';
+const BACKEND_URL = 'https://routeweather-backend-production.up.railway.app';
 
 let stravaState = {
   accessToken: null,
@@ -1596,10 +1599,13 @@ document.addEventListener('DOMContentLoaded', () => {
   dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); if(e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]); });
   document.getElementById('gpxFile').addEventListener('change', e => { if(e.target.files[0]) processFile(e.target.files[0]); });
   document.getElementById('speedUnit').addEventListener('change', () => {
-    const v = document.getElementById('avgSpeed').value;
-    const toKmh = document.getElementById('speedUnit').value === 'mph';
-    document.getElementById('avgSpeed').value = toKmh ? (v * 1.60934).toFixed(0) : (v / 1.60934).toFixed(0);
-    document.getElementById('speedUnit').value = toKmh ? 'mph' : 'kmh';
+    const speedInput = document.getElementById('avgSpeed');
+    const v = parseFloat(speedInput.value);
+    if (!isNaN(v)) {
+      const nowMph = document.getElementById('speedUnit').value === 'mph';
+      // Convert the displayed number to match the newly selected unit
+      speedInput.value = nowMph ? (v / 1.60934).toFixed(0) : (v * 1.60934).toFixed(0);
+    }
   });
 
   // Check for Strava OAuth callback
@@ -1928,6 +1934,14 @@ async function runAnalysis() {
   const startTime = new Date(startInput);
   st.isHistorical = startTime < new Date();
 
+  // Open-Meteo's forecast endpoint only covers ~16 days ahead; fail fast with
+  // a clear message instead of letting every waypoint request 400 silently.
+  const daysAhead = (startTime - new Date()) / 86400000;
+  if (!st.isHistorical && daysAhead > 16) {
+    showErr(t('toast_forecast_too_far'));
+    return;
+  }
+
   hideErr();
   showLoad(t('loading_timeline'));
   document.getElementById('analyseBtn').disabled = true;
@@ -2169,10 +2183,10 @@ function renderCards() {
   const feels  = wps.map(w=>w.feelsLike).filter(v=>v!=null);
   const rains  = st.isHistorical ? wps.map(w=>w.rainMm>0.1?60:5) : wps.map(w=>w.rainPct??0);
   const winds  = wps.map(w=>w.windSpd??0);
-  const tmin   = Math.min(...temps).toFixed(1), tmax=Math.max(...temps).toFixed(1);
+  const tmin   = temps.length ? Math.min(...temps).toFixed(1) : null, tmax = temps.length ? Math.max(...temps).toFixed(1) : null;
   const rMax   = Math.max(...rains), wMax=Math.max(...winds).toFixed(0);
 
-  document.getElementById('sc-temp').textContent     = `${tmin}–${tmax}°C`;
+  document.getElementById('sc-temp').textContent     = temps.length ? `${tmin}–${tmax}°C` : '—';
 
   // Show feels-like range below temp
   if (feels.length) {
@@ -2650,7 +2664,8 @@ function buildNotifSummary() {
   const temps  = wps.map(w=>w.temp).filter(v=>v!=null);
   const winds  = wps.map(w=>w.windSpd??0);
   const maxRain= st.isHistorical ? (wps.some(w=>w.rainMm>0.5)?t('rain_label'):t('dry_label')) : `${Math.max(...wps.map(w=>w.rainPct??0))}% rain chance`;
-  return `${Math.min(...temps).toFixed(0)}–${Math.max(...temps).toFixed(0)}°C · ${maxRain} · Wind up to ${Math.max(...winds).toFixed(0)} km/h`;
+  const tempStr = temps.length ? `${Math.min(...temps).toFixed(0)}–${Math.max(...temps).toFixed(0)}°C` : '—';
+  return `${tempStr} · ${maxRain} · Wind up to ${Math.max(...winds).toFixed(0)} km/h`;
 }
 
 // ======================================================
@@ -2665,7 +2680,8 @@ function generateSummary() {
   const gusts = wps.map(w=>w.windGust??0);
   const rains = st.isHistorical ? wps.map(w=>w.rainMm>0.1?60:5) : wps.map(w=>w.rainPct??0);
 
-  const tmin = Math.min(...temps).toFixed(0), tmax = Math.max(...temps).toFixed(0);
+  const tmin = temps.length ? Math.min(...temps).toFixed(0) : '—';
+  const tmax = temps.length ? Math.max(...temps).toFixed(0) : '—';
   const fmin = feels.length ? Math.min(...feels).toFixed(0) : tmin;
   const fmax = feels.length ? Math.max(...feels).toFixed(0) : tmax;
   const rMax = Math.max(...rains);
@@ -3154,7 +3170,7 @@ async function showBestTime() {
 
     const forecasts = [];
     for (const pt of samplePts) {
-      const url = `${FORECAST_URL}?latitude=${pt.lat.toFixed(4)}&longitude=${pt.lon.toFixed(4)}&hourly=temperature_2m,precipitation_probability,wind_speed_10m&start_date=${startDate}&end_date=${endDate}&timezone=Europe%2FMadrid&wind_speed_unit=kmh`;
+      const url = `${FORECAST_URL}?latitude=${pt.lat.toFixed(4)}&longitude=${pt.lon.toFixed(4)}&hourly=temperature_2m,precipitation_probability,wind_speed_10m&start_date=${startDate}&end_date=${endDate}&timezone=UTC&wind_speed_unit=kmh`;
       for (let attempt = 0; attempt < 3; attempt++) {
         const r = await fetch(url);
         if (r.status === 429) { await delay(2000 * Math.pow(2, attempt)); continue; }
@@ -3177,17 +3193,21 @@ async function showBestTime() {
         count++;
       }
       hourlyAvg.push({
-        time: new Date(forecasts[0].hourly.time[h]),
+        time: new Date(forecasts[0].hourly.time[h] + 'Z'),
         temp: sumTemp / count,
         rain: sumRain / count,
         wind: sumWind / count
       });
     }
 
-    // Score each possible departure slot (6:00-20:00, next 3 days)
+    // Score each possible departure slot (6:00-20:00 Madrid time, next 3 days)
+    // Times are fetched in UTC and converted to Madrid wall-clock hours via
+    // Intl so this is correct regardless of the viewing device's own timezone
+    // (and automatically handles the CET/CEST switch).
+    const madridHourFmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Madrid', hour: '2-digit', hour12: false });
     const slots = [];
     for (const ha of hourlyAvg) {
-      const hour = ha.time.getHours();
+      const hour = parseInt(madridHourFmt.format(ha.time), 10) % 24;
       if (hour < 6 || hour > 20) continue;
       if (ha.time <= now) continue;
 
@@ -3427,7 +3447,7 @@ async function findPOIs() {
         item.innerHTML =
           '<span class="poi-item-icon">' + icon + '</span>' +
           '<div class="poi-item-info">' +
-            '<div class="poi-item-name">' + poi.name + '</div>' +
+            '<div class="poi-item-name">' + escHtml(poi.name) + '</div>' +
             '<div class="poi-item-meta">' + t('poi_' + poi.type) + ' · km ' + poi.routeKm.toFixed(1) + '</div>' +
           '</div>' +
           '<span class="poi-item-dist">' + t('poi_distance', { d: poi.dist }) + '</span>';
@@ -3456,7 +3476,7 @@ async function findPOIs() {
         item.innerHTML =
           '<span class="poi-item-icon">🚰</span>' +
           '<div class="poi-item-info">' +
-            '<div class="poi-item-name">' + (poi.name !== t('poi_fountain') ? poi.name : t('poi_fountain')) + '</div>' +
+            '<div class="poi-item-name">' + escHtml(poi.name !== t('poi_fountain') ? poi.name : t('poi_fountain')) + '</div>' +
             '<div class="poi-item-meta">' + t('poi_fountain') + ' · km ' + poi.routeKm.toFixed(1) + '</div>' +
           '</div>' +
           '<span class="poi-item-dist">' + t('poi_distance', { d: poi.dist }) + '</span>';
@@ -3489,7 +3509,7 @@ function addPOIMarker(poi, emoji) {
     iconAnchor: [14, 14]
   });
   var marker = L.marker([poi.lat, poi.lon], { icon: icon })
-    .bindPopup('<b>' + poi.name + '</b><br/><span style="color:#64748b;font-size:11px">' + t('poi_' + poi.type) + ' · ' + t('poi_distance', { d: poi.dist }) + '</span>')
+    .bindPopup('<b>' + escHtml(poi.name) + '</b><br/><span style="color:#64748b;font-size:11px">' + t('poi_' + poi.type) + ' · ' + t('poi_distance', { d: poi.dist }) + '</span>')
     .addTo(map);
   poiMarkers.push(marker);
 }
@@ -3506,8 +3526,8 @@ function fmtTime(d){ return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-di
 function windLabel(deg){ if(deg==null)return'—'; const dirs=['N','NE','E','SE','S','SW','W','NW']; return dirs[Math.round(deg/45)%8]; }
 function windArr(deg){ if(deg==null)return''; const a=['↓','↙','←','↖','↑','↗','→','↘']; return a[Math.round(deg/45)%8]; }
 function wmoEmoji(c){
-  if(!c)return'☀️';if(c<=1)return'☀️';if(c<=2)return'🌤';if(c<=3)return'☁️';
-  if(c<=49)return'🌫';if(c<=57)return'🌨';if(c<=67)return'🌧';if(c<=77)return'❄️';
+  if(c==null)return'☀️';if(c<=1)return'☀️';if(c<=2)return'🌤';if(c<=3)return'☁️';
+  if(c<=48)return'🌫';if(c<=57)return'🌦';if(c<=67)return'🌧';if(c<=77)return'❄️';
   if(c<=82)return'🌦';if(c<=86)return'🌨';return'⛈';
 }
 
