@@ -1617,8 +1617,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function initMap() {
   map = L.map('map', { zoomControl: true }).setView([40.97, -5.66], 5);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-    { attribution: '© CartoDB © OSM', maxZoom: 19 }).addTo(map);
+     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+       { attribution: '© OpenStreetMap contributors', maxZoom: 19 }).addTo(map);
   document.getElementById('mapEmpty').style.display = 'flex';
 }
 
