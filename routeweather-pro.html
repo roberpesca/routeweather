@@ -628,6 +628,19 @@ input:focus,select:focus{border-color:var(--accent);background:#fff;box-shadow:0
 .poi-pop-link{color:#1b61d9;font-weight:600;font-size:14px;text-decoration:none}
 .poi-retry{color:#1b61d9;font-weight:600;text-decoration:none;display:inline-block;margin-top:6px}
 .poi-warn{font-size:13.5px;line-height:1.4;color:#8a5a00;background:#fff6e0;border-radius:12px;padding:9px 12px;margin:0 0 10px}
+
+/* ---- Forecast tab v2 ---- */
+#weatherChart{height:340px!important}
+@media(min-width:761px){#weatherChart{height:420px!important}}
+.chart-note{font-size:13px;line-height:1.4;color:#80868b;margin-top:8px}
+.chart-note:empty{display:none}
+.ctab{white-space:nowrap}
+.chart-tabs{flex-wrap:wrap}
+.dt-wrap{position:relative;height:48px}
+.dt-display{position:absolute;inset:0;display:flex;align-items:center;background:#f7f8fa;border:1px solid #dfe3e8;border-radius:12px;padding:0 44px 0 14px;font-size:16px;font-family:var(--font);color:var(--text);pointer-events:none;font-variant-numeric:tabular-nums;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235f6368' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='5' width='17' height='15.5' rx='2.500'/%3E%3Cpath d='M3.500 10h17M8 3v4M16 3v4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-size:20px}
+.dt-wrap input[type=datetime-local]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:2}
+.dt-wrap:focus-within .dt-display{border-color:var(--accent);box-shadow:0 0 0 3px rgba(27,97,217,.15)}
 </style>
 </head>
 <body>
@@ -720,7 +733,10 @@ input:focus,select:focus{border-color:var(--accent);background:#fff;box-shadow:0
     <div class="sec-body" id="sec-ride" style="display:flex;flex-direction:column">
       <div class="field">
         <span data-i18n="field_start_time">Fecha y Hora de Inicio</span>
-        <input type="datetime-local" id="startTime"/>
+        <div class="dt-wrap">
+          <div class="dt-display" id="startTimeDisplay" aria-hidden="true"></div>
+          <input type="datetime-local" id="startTime"/>
+        </div>
       </div>
       <div class="row2">
         <div class="field"><span data-i18n="field_avg_speed">Velocidad Media</span><input type="number" id="avgSpeed" value="27" min="5" max="90" step="1" inputmode="decimal"/></div>
@@ -799,15 +815,6 @@ input:focus,select:focus{border-color:var(--accent);background:#fff;box-shadow:0
   <!-- Weather alert banner -->
   <div class="alert-banner" id="alertBanner" data-i18n="alert_adverse">&#9888;&#65039; Alerta: Condiciones adversas en parte de la ruta</div>
 
-  <!-- Gear panel -->
-  <div class="gear-panel" id="gearPanel">
-    <div class="gear-hdr">
-      <span class="gear-icon">&#128085;</span>
-      <span class="gear-title" data-i18n="gear_title">Equipamiento Recomendado</span>
-    </div>
-    <div class="gear-zones" id="gearZones"></div>
-  </div>
-
   <div class="chart-area" id="chartArea">
     <div class="chart-tabs">
       <button class="ctab active" onclick="switchChart('temp',this)" data-i18n="chart_temp">&#127777; Temp</button>
@@ -821,6 +828,7 @@ input:focus,select:focus{border-color:var(--accent);background:#fff;box-shadow:0
       <div id="xhairLine" style="position:absolute;top:0;bottom:0;width:2px;background:rgba(37,99,235,.5);pointer-events:none;display:none;z-index:10;border-radius:1px"></div>
       <div id="xhairDots" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:11"></div>
     </div>
+    <div class="chart-note" id="chartNote"></div>
   </div>
 
   <!-- Waypoints -->
@@ -830,6 +838,16 @@ input:focus,select:focus{border-color:var(--accent);background:#fff;box-shadow:0
     </div>
     <div class="wp-list" id="wpList"></div>
   </div>
+
+  <!-- Gear panel -->
+  <div class="gear-panel" id="gearPanel">
+    <div class="gear-hdr">
+      <span class="gear-icon">&#128085;</span>
+      <span class="gear-title" data-i18n="gear_title">Equipamiento Recomendado</span>
+    </div>
+    <div class="gear-zones" id="gearZones"></div>
+  </div>
+
 
 </div></section>
 </main>
@@ -965,6 +983,9 @@ const i18n = {
     loading_forecast: 'forecast',
     chart_temp: 'Temp',
     chart_rain: 'Rain',
+    chart_rain_prob: 'Chance of rain (%)',
+    chart_rain_mm: 'Amount (mm)',
+    chart_rain_hist_note: 'Chance of rain is only available for future times, so only the amount is shown.',
     chart_wind: 'Wind',
     chart_wind_speed: 'Wind (km/h)',
     chart_wind_gust: 'Gusts (km/h)',
@@ -1217,6 +1238,9 @@ const i18n = {
     loading_forecast: 'previsión',
     chart_temp: 'Temp',
     chart_rain: 'Lluvia',
+    chart_rain_prob: 'Probabilidad de lluvia (%)',
+    chart_rain_mm: 'Cantidad (mm)',
+    chart_rain_hist_note: 'La probabilidad de lluvia solo existe para horas futuras, por eso solo se muestra la cantidad.',
     chart_wind: 'Viento',
     chart_wind_speed: 'Viento (km/h)',
     chart_wind_gust: 'Rachas (km/h)',
@@ -1917,9 +1941,19 @@ function fitRoute(bounds) {
 }
 window.addEventListener('resize', function(){ if (typeof map !== 'undefined' && map && currentTab === 'map') map.invalidateSize(); });
 
+function updateStartDisplay() {
+  var inp = document.getElementById('startTime'), out = document.getElementById('startTimeDisplay');
+  if (!inp || !out) return;
+  var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(inp.value || '');
+  if (!m) { out.textContent = '--/--/---- --:--'; return; }
+  out.textContent = parseInt(m[3],10) + '/' + parseInt(m[2],10) + '/' + m[1] + '  ' + m[4] + ':' + m[5];
+}
 function setDefaultTime() {
   const d = new Date(); d.setMinutes(0,0,0); d.setHours(d.getHours()+1);
   document.getElementById('startTime').value = new Date(d - d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  updateStartDisplay();
+  var el = document.getElementById('startTime');
+  if (!el._dtBound) { el._dtBound = true; el.addEventListener('input', updateStartDisplay); el.addEventListener('change', updateStartDisplay); }
 }
 
 // ======================================================
@@ -2783,6 +2817,7 @@ function renderChart(type) {
   delete baseOpts.scales.y2;
 
   let datasets, yColor;
+  var noteEl = document.getElementById('chartNote'); if (noteEl) noteEl.textContent = '';
 
   if (type==='temp') {
     yColor='#f97316';
@@ -2800,29 +2835,48 @@ function renderChart(type) {
         pointBackgroundColor:'#8b5cf6',
         borderDash:[4,3]}
     ];
+    var tAll = [];
+    wps.forEach(function(w){ if (w.temp!=null) tAll.push(w.temp); if (w.feelsLike!=null) tAll.push(w.feelsLike); });
+    var tMin = tAll.length ? Math.min.apply(null,tAll) : 0, tMax = tAll.length ? Math.max.apply(null,tAll) : 20;
+    baseOpts.scales.y.min = Math.min(0, Math.floor(tMin - 1));
+    baseOpts.scales.y.max = Math.max(Math.ceil(tMax + 2), baseOpts.scales.y.min + 10);
     baseOpts.scales.y.ticks.color=yColor;
+    baseOpts.scales.y.ticks.callback = function(v){ return v + '°'; };
+    baseOpts.scales.y.title = {display:true,text:'°C',color:'#64748b',font:{family:"'Inter'",size:12}};
+    baseOpts.plugins.tooltip.callbacks = { label: function(c){ return ' ' + c.dataset.label + ': ' + (c.parsed.y!=null ? c.parsed.y.toFixed(1) : '—') + '°C'; } };
 
   } else if (type==='rain') {
     yColor='#3b82f6';
+    var maxMm = Math.max.apply(null, wps.map(function(w){ return w.rainMm || 0; }).concat([0]));
+    var mmMax = Math.max(5, Math.ceil(maxMm * 1.15));
     if (st.isHistorical) {
-      datasets=[{label:'Rain (mm)',data:wps.map(w=>w.rainMm ?? 0),
-        borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.15)',fill:true,
-        tension:.3,pointRadius:4,pointBackgroundColor:'#3b82f6'}];
+      datasets=[{label:t('chart_rain_mm'),data:wps.map(w=>w.rainMm ?? 0),
+        borderColor:'#0f766e',backgroundColor:'rgba(15,118,110,.14)',fill:true,
+        tension:.3,pointRadius:4,pointBackgroundColor:'#0f766e'}];
+      baseOpts.scales.y.min=0; baseOpts.scales.y.max=mmMax;
+      baseOpts.scales.y.ticks.color='#0f766e';
+      baseOpts.scales.y.ticks.callback=function(v){ return v + ' mm'; };
+      baseOpts.scales.y.title={display:true,text:t('chart_rain_mm'),color:'#64748b',font:{family:"'Inter'",size:12}};
+      document.getElementById('chartNote').textContent = t('chart_rain_hist_note');
     } else {
       datasets=[
-        {label:'Prob (%)',data:wps.map(w=>w.rainPct??0),borderColor:'#3b82f6',
-          backgroundColor:'rgba(59,130,246,.12)',fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#3b82f6',yAxisID:'y'},
-        {label:'mm',data:wps.map(w=>w.rainMm ?? 0),borderColor:'#0ea5e9',
-          backgroundColor:'rgba(14,165,233,.06)',fill:true,tension:.3,pointRadius:3,pointBackgroundColor:'#0ea5e9',yAxisID:'y2',borderDash:[4,3]}
+        {label:t('chart_rain_prob'),data:wps.map(w=>w.rainPct??0),borderColor:'#3b82f6',
+          backgroundColor:'rgba(59,130,246,.12)',fill:true,tension:.35,pointRadius:4,pointBackgroundColor:'#3b82f6',yAxisID:'y'},
+        {label:t('chart_rain_mm'),data:wps.map(w=>w.rainMm ?? 0),borderColor:'#0f766e',
+          backgroundColor:'rgba(15,118,110,0)',fill:false,tension:.3,pointRadius:4,pointBackgroundColor:'#0f766e',yAxisID:'y2'}
       ];
-      baseOpts.scales.y2={position:'right',grid:{drawOnChartArea:false},min:0,
-        ticks:{color:'#0ea5e9',font:{family:"'Inter'",size:11}},
-        title:{display:true,text:'mm',color:'#64748b',font:{size:9}}};
+      baseOpts.scales.y.min=0; baseOpts.scales.y.max=100;
+      baseOpts.scales.y.ticks.color='#3b82f6';
+      baseOpts.scales.y.ticks.stepSize=20;
+      baseOpts.scales.y.ticks.callback=function(v){ return v + '%'; };
+      baseOpts.scales.y.title={display:true,text:t('chart_rain_prob'),color:'#3b82f6',font:{family:"'Inter'",size:12}};
+      baseOpts.scales.y2={position:'right',grid:{drawOnChartArea:false},min:0,max:mmMax,
+        ticks:{color:'#0f766e',font:{family:"'Inter'",size:11},callback:function(v){ return v + ' mm'; }},
+        title:{display:true,text:t('chart_rain_mm'),color:'#0f766e',font:{family:"'Inter'",size:12}}};
     }
-    baseOpts.scales.y.ticks.color=yColor;
-    baseOpts.scales.y.min=0;
-    baseOpts.scales.y.beginAtZero=true;
-    baseOpts.scales.y.grace=0;
+    baseOpts.plugins.tooltip.callbacks = { label: function(c){
+      var isMm = c.dataset.yAxisID==='y2' || st.isHistorical;
+      return ' ' + c.dataset.label + ': ' + (isMm ? c.parsed.y.toFixed(1) + ' mm' : Math.round(c.parsed.y) + '%'); } };
 
   } else if (type==='wind') {
     yColor='#8b5cf6';
