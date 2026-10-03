@@ -984,7 +984,9 @@ const i18n = {
     chart_temp: 'Temp',
     chart_rain: 'Rain',
     chart_rain_prob: 'Chance of rain (%)',
-    chart_rain_mm: 'Amount (mm)',
+    chart_rain_mm: 'Expected amount (mm)',
+    chart_rain_note_ens: 'Both lines come from the same set of {n} forecast scenarios: the chance is the share of scenarios with rain, and the amount is their average.',
+    chart_rain_note: 'The chance of rain is how likely it is that some rain falls; the amount is the best guess of the main forecast. A chance of rain with 0 mm means rain is possible but the main forecast expects it to stay dry or very light.',
     chart_rain_hist_note: 'Chance of rain is only available for future times, so only the amount is shown.',
     chart_wind: 'Wind',
     chart_wind_speed: 'Wind (km/h)',
@@ -1239,7 +1241,9 @@ const i18n = {
     chart_temp: 'Temp',
     chart_rain: 'Lluvia',
     chart_rain_prob: 'Probabilidad de lluvia (%)',
-    chart_rain_mm: 'Cantidad (mm)',
+    chart_rain_mm: 'Cantidad media (mm)',
+    chart_rain_note_ens: 'Las dos líneas salen del mismo conjunto de {n} escenarios de previsión: la probabilidad es el porcentaje de escenarios con lluvia y la cantidad es su media.',
+    chart_rain_note: 'La probabilidad indica lo posible que es que caiga algo de lluvia; la cantidad es la estimación del modelo principal. Una probabilidad con 0 mm significa que puede llover, pero el modelo principal prevé que se quede seco o con muy poca lluvia.',
     chart_rain_hist_note: 'La probabilidad de lluvia solo existe para horas futuras, por eso solo se muestra la cantidad.',
     chart_wind: 'Viento',
     chart_wind_speed: 'Viento (km/h)',
@@ -2198,8 +2202,46 @@ function weatherUrl(lat, lon, dateStr, historical) {
 
 function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
+var ensembleOff = false, ensembleModels = null;
+// Ask the ensemble service for many "what if" forecasts for the same hour. Chance of rain = share of
+// scenarios with rain; amount = their average. Both come from the same data, so they always agree.
+async function fetchEnsemble(lat, lon, ds, utcHour) {
+  if (ensembleOff) return null;
+  var combos = ensembleModels ? [ensembleModels] : ['ecmwf_ifs025,icon_seamless', 'icon_seamless'];
+  var all400 = true;
+  for (var c = 0; c < combos.length; c++) {
+    try {
+      var url = 'https://ensemble-api.open-meteo.com/v1/ensemble?latitude=' + lat.toFixed(4) + '&longitude=' + lon.toFixed(4) +
+        '&hourly=precipitation&models=' + combos[c] + '&start_date=' + ds + '&end_date=' + ds + '&timezone=UTC';
+      var r = await fetch(url);
+      if (r.status === 429) { await delay(1500); r = await fetch(url); }
+      if (!r.ok) { if (r.status !== 400) all400 = false; continue; }
+      all400 = false;
+      var d = await r.json();
+      if (!d.hourly || !d.hourly.time) continue;
+      var hi = d.hourly.time.findIndex(function(t){ return new Date(t + 'Z').getUTCHours() === utcHour; });
+      if (hi < 0) hi = utcHour;
+      var vals = [];
+      Object.keys(d.hourly).forEach(function(k) {
+        if (/^precipitation/.test(k) && !/probability/.test(k)) {
+          var v = d.hourly[k] && d.hourly[k][hi];
+          if (v != null && isFinite(v)) vals.push(v);
+        }
+      });
+      if (vals.length < 10) continue;
+      ensembleModels = combos[c];
+      var wet = vals.filter(function(v){ return v >= 0.1; }).length;
+      var mean = vals.reduce(function(a, b){ return a + b; }, 0) / vals.length;
+      return { pct: Math.round(wet / vals.length * 100), mm: Math.round(mean * 100) / 100, n: vals.length };
+    } catch (e) { all400 = false; }
+  }
+  if (all400) ensembleOff = true;   // this service rejected our request: stop asking for the rest of the session
+  return null;
+}
+
 async function fetchWx(lat, lon, arrivalTime, historical, retries=3) {
   const ds = arrivalTime.toISOString().slice(0,10);
+  const ensP = historical ? null : fetchEnsemble(lat, lon, ds, arrivalTime.getUTCHours());
   const url = weatherUrl(lat, lon, ds, historical);
   for (let attempt = 0; attempt < retries; attempt++) {
     const r = await fetch(url);
@@ -2213,11 +2255,14 @@ async function fetchWx(lat, lon, arrivalTime, historical, retries=3) {
     const utcHour = arrivalTime.getUTCHours();
     let hi = d.hourly.time.findIndex(t => new Date(t+'Z').getUTCHours()===utcHour);
     if (hi<0) hi = utcHour;
+    const ens = ensP ? await ensP : null;
     return {
       temp:      d.hourly.temperature_2m?.[hi] ?? null,
       feelsLike: d.hourly.apparent_temperature?.[hi] ?? null,
-      rainPct:   historical ? null : (d.hourly.precipitation_probability?.[hi] ?? 0),
-      rainMm:    d.hourly.precipitation?.[hi] ?? 0,
+      rainPct:   historical ? null : (ens ? ens.pct : (d.hourly.precipitation_probability?.[hi] ?? 0)),
+      rainMm:    ens ? ens.mm : (d.hourly.precipitation?.[hi] ?? 0),
+      rainSrc:   ens ? 'ens' : 'single',
+      rainN:     ens ? ens.n : 0,
       windSpd:   (d.hourly.windspeed_10m?.[hi] ?? d.hourly.wind_speed_10m?.[hi]) ?? null,
       windGust:  (d.hourly.windgusts_10m?.[hi] ?? d.hourly.wind_gusts_10m?.[hi]) ?? null,
       windDir:   (d.hourly.winddirection_10m?.[hi] ?? d.hourly.wind_direction_10m?.[hi]) ?? null,
@@ -2870,13 +2915,14 @@ function renderChart(type) {
       baseOpts.scales.y.ticks.stepSize=20;
       baseOpts.scales.y.ticks.callback=function(v){ return v + '%'; };
       baseOpts.scales.y.title={display:true,text:t('chart_rain_prob'),color:'#3b82f6',font:{family:"'Inter'",size:12}};
+      document.getElementById('chartNote').textContent = wps.some(function(w){ return w.rainSrc === 'ens'; }) ? t('chart_rain_note_ens', { n: Math.max.apply(null, wps.map(function(w){ return w.rainN || 0; })) }) : t('chart_rain_note');
       baseOpts.scales.y2={position:'right',grid:{drawOnChartArea:false},min:0,max:mmMax,
         ticks:{color:'#0f766e',font:{family:"'Inter'",size:11},callback:function(v){ return v + ' mm'; }},
         title:{display:true,text:t('chart_rain_mm'),color:'#0f766e',font:{family:"'Inter'",size:12}}};
     }
     baseOpts.plugins.tooltip.callbacks = { label: function(c){
       var isMm = c.dataset.yAxisID==='y2' || st.isHistorical;
-      return ' ' + c.dataset.label + ': ' + (isMm ? c.parsed.y.toFixed(1) + ' mm' : Math.round(c.parsed.y) + '%'); } };
+      return ' ' + c.dataset.label + ': ' + (isMm ? (c.parsed.y < 0.05 ? '< 0.1 mm' : c.parsed.y.toFixed(1) + ' mm') : Math.round(c.parsed.y) + '%'); } };
 
   } else if (type==='wind') {
     yColor='#8b5cf6';
