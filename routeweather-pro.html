@@ -3770,63 +3770,6 @@ function poiScore(tags, type, distM, openState) {
 }
 
 
-// ---- Overpass access: several public servers, small chunks, retries ----
-var OVERPASS_MIRRORS = [
-  'https://overpass-api.de/api/interpreter',
-  'https://overpass.private.coffee/api/interpreter',
-  'https://overpass.kumi.systems/api/interpreter',
-  'https://maps.mail.ru/osm/tools/overpass/api/interpreter'
-];
-var overpassPref = 0;
-function sleepMs(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
-async function overpassQuery(query) {
-  var lastErr = null;
-  var attempts = OVERPASS_MIRRORS.length * 2;
-  for (var a = 0; a < attempts; a++) {
-    var url = OVERPASS_MIRRORS[(overpassPref + a) % OVERPASS_MIRRORS.length];
-    var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-    var timer = ctrl ? setTimeout(function() { ctrl.abort(); }, 30000) : null;
-    try {
-      var resp = await fetch(url, {
-        method: 'POST',
-        body: 'data=' + encodeURIComponent(query),
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        signal: ctrl ? ctrl.signal : undefined
-      });
-      if (timer) clearTimeout(timer);
-      if (resp.status === 429) { lastErr = new Error('Overpass API error: 429'); await sleepMs(1500); continue; }
-      if (!resp.ok) { lastErr = new Error('Overpass API error: ' + resp.status); continue; }
-      var data = await resp.json();
-      if (data.remark && /timed out|out of memory|runtime error/i.test(data.remark) && !(data.elements && data.elements.length)) {
-        lastErr = new Error('Overpass API busy'); continue;
-      }
-      overpassPref = (overpassPref + a) % OVERPASS_MIRRORS.length;   // remember the server that worked
-      return data;
-    } catch (e) {
-      if (timer) clearTimeout(timer);
-      lastErr = e;
-      await sleepMs(400);
-    }
-  }
-  throw lastErr || new Error('Overpass unavailable');
-}
-
-// Remember results per route for a day so repeat taps are instant (and cope with a busy server)
-function poiCacheKey(pts) {
-  var a = pts[0], b = pts[Math.floor(pts.length / 2)], c = pts[pts.length - 1];
-  return 'rw_poi_v2_' + [a.lat, a.lon, b.lat, b.lon, c.lat, c.lon, pts.length].map(function(x) { return Math.round(x * 1e4); }).join('_');
-}
-function poiCacheGet(key) {
-  try {
-    var o = JSON.parse(localStorage.getItem(key) || 'null');
-    if (o && Date.now() - o.t < 86400000) return o.els;
-  } catch (e) {}
-  return null;
-}
-function poiCachePut(key, els) {
-  try { localStorage.setItem(key, JSON.stringify({ t: Date.now(), els: els })); } catch (e) {}
-}
-
 async function findPOIs() {
   var pts = st.rawPts;
   if (!pts.length) { showToast(t('bt_no_route'), 'warn'); return; }
@@ -3849,51 +3792,32 @@ async function findPOIs() {
     for (var i = 1; i < pts.length; i++) cum.push(cum[i - 1] + hav(pts[i - 1], pts[i]));
     var totalDist = cum[cum.length - 1];
 
-    // Sample a point about every 1.6 km (at most 120) for the corridor search
-    var spacing = Math.max(1.6, totalDist / 120);
+    // Sample at most ~40 points along the route for the corridor search (keeps the request light)
+    var spacing = Math.max(1.6, totalDist / 40);
     var sample = [pts[0]], lastKm = 0;
     for (var j = 1; j < pts.length; j++) {
       if (cum[j] - lastKm >= spacing) { sample.push(pts[j]); lastKm = cum[j]; }
     }
     if (sample[sample.length - 1] !== pts[pts.length - 1]) sample.push(pts[pts.length - 1]);
-    var radius = 1000;
-    var cacheKey = poiCacheKey(pts);
-    var elements = poiCacheGet(cacheKey);
+    var coordStr = sample.map(function(p) { return p.lat.toFixed(5) + ',' + p.lon.toFixed(5); }).join(',');
+    var radius = 1500;
+    var around = '(around:' + radius + ',' + coordStr + ')';
     var failedChunks = 0;
 
-    if (!elements) {
-      // Split the route into small pieces: many small questions are much easier for the server than one huge one
-      var chunkSize = 14, chunks = [];
-      for (var c0 = 0; c0 < sample.length; c0 += chunkSize - 1) {
-        var part = sample.slice(c0, c0 + chunkSize);
-        if (part.length) chunks.push(part);
-        if (c0 + chunkSize >= sample.length) break;
-      }
-      var byId = {}, done = 0, nextChunk = 0;
-      var loadingEl = results.querySelector('.poi-loading');
-      var worker = async function() {
-        while (nextChunk < chunks.length) {
-          var my = chunks[nextChunk++];
-          var cs = my.map(function(p) { return p.lat.toFixed(5) + ',' + p.lon.toFixed(5); }).join(',');
-          var around = '(around:' + radius + ',' + cs + ')';
-          var q = '[out:json][timeout:25];(' +
-            'nwr["amenity"~"^(cafe|bar|pub|restaurant|ice_cream|drinking_water|bicycle_repair_station)$"]' + around + ';' +
-            'nwr["shop"~"^(bakery|pastry|coffee|convenience|supermarket|bicycle)$"]' + around + ';' +
-            ');out center tags;';
-          try {
-            var d = await overpassQuery(q);
-            (d.elements || []).forEach(function(el) { byId[el.type + el.id] = el; });
-          } catch (e) { failedChunks++; }
-          done++;
-          if (loadingEl) loadingEl.textContent = t('poi_loading') + ' ' + done + '/' + chunks.length;
-        }
-      };
-      await Promise.all([worker(), worker()]);
-      elements = Object.keys(byId).map(function(k) { return byId[k]; });
-      if (failedChunks === 0) poiCachePut(cacheKey, elements);
-      else if (failedChunks === chunks.length) throw new Error('OVERPASS_DOWN');
-    }
-    var data = { elements: elements };
+    var query = '[out:json][timeout:30];(' +
+      'node["amenity"~"^(cafe|bar|pub|restaurant|ice_cream|drinking_water|bicycle_repair_station)$"]' + around + ';' +
+      'way["amenity"~"^(cafe|bar|pub|restaurant|ice_cream)$"]' + around + ';' +
+      'node["shop"~"^(bakery|pastry|coffee|convenience|supermarket|bicycle)$"]' + around + ';' +
+      'way["shop"~"^(bakery|pastry|coffee|convenience|supermarket|bicycle)$"]' + around + ';' +
+      ');out center tags;';
+
+    var resp = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST',
+      body: 'data=' + encodeURIComponent(query),
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+    if (!resp.ok) throw new Error('Overpass API error: ' + resp.status);
+    var data = await resp.json();
 
     var start = poiStartDate();
     var kmh = poiSpeedKmh();
@@ -4016,7 +3940,7 @@ async function findPOIs() {
     }
 
   } catch (err) {
-    results.innerHTML = '<div class="poi-loading">' + escHtml(t('poi_busy')) + '<br/><a href="#" class="poi-retry">' + escHtml(t('poi_retry')) + '</a></div>';
+    results.innerHTML = '<div class="poi-loading">' + escHtml(err.message) + '<br/><a href="#" class="poi-retry">' + escHtml(t('poi_retry')) + '</a></div>';
     results.querySelector('.poi-retry').onclick = function(ev) { ev.preventDefault(); findPOIs(); };
     console.error('POI error:', err);
   }
