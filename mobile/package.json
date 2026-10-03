@@ -1,0 +1,29 @@
+{
+  "name": "routeweather-pro-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "RouteWeather Pro — Android and iPhone app (Capacitor wrapper around the web app)",
+  "scripts": {
+    "prepare-web": "node scripts/prepare-web.js",
+    "sync": "npm run prepare-web && npx cap sync",
+    "add-android": "npx cap add android && node scripts/configure-native.js android && npx @capacitor/assets generate --android",
+    "add-ios": "npx cap add ios && node scripts/configure-native.js ios && npx @capacitor/assets generate --ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/browser": "^8.0.5",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/filesystem": "^8.1.4",
+    "@capacitor/ios": "^8.5.2",
+    "@capacitor/local-notifications": "^8.3.1",
+    "@capacitor/share": "^8.0.3",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.4"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.2"
+  },
+  "engines": { "node": ">=22" }
+}

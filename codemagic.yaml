@@ -1,0 +1,47 @@
+# iPhone build robot (Codemagic) — builds the iPhone app on Apple computers in the cloud,
+# so you do not need a Mac. Setup steps are in LAUNCH-GUIDE (section "iPhone").
+workflows:
+  ios-app-store:
+    name: RouteWeather Pro — iPhone
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: RouteWeather          # the name you give your Apple key inside Codemagic
+    environment:
+      node: 22
+      xcode: latest
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.roberpesca.routeweather
+      vars:
+        APP_VERSION_NAME: "1.0.0"
+    scripts:
+      - name: Install app tools and create the iPhone project
+        script: |
+          cd mobile
+          npm install
+          npm run prepare-web
+          npm run add-ios
+          npx cap sync ios
+      - name: Set version numbers
+        script: |
+          cd mobile/ios/App
+          sed -i '' "s/CURRENT_PROJECT_VERSION = [0-9]*;/CURRENT_PROJECT_VERSION = $PROJECT_BUILD_NUMBER;/" App.xcodeproj/project.pbxproj
+          sed -i '' "s/MARKETING_VERSION = [0-9.]*;/MARKETING_VERSION = $APP_VERSION_NAME;/" App.xcodeproj/project.pbxproj
+      - name: Apply Apple signing
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "com.roberpesca.routeweather" --type IOS_APP_STORE --create
+          keychain add-certificates
+          xcode-project use-profiles --project mobile/ios/App/App.xcodeproj
+      - name: Build the iPhone app file (.ipa)
+        script: |
+          cd mobile/ios/App
+          xcode-project build-ipa --project App.xcodeproj --scheme App
+    artifacts:
+      - mobile/ios/App/build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true     # sends it to Apple's TestFlight so you can test on a real iPhone
+        submit_to_app_store: false     # you press "Submit for review" yourself in App Store Connect

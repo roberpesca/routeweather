@@ -28,7 +28,7 @@ html,body{height:100%;overflow:hidden}
 body{font-family:var(--font-m);background:var(--bg);color:var(--text);display:flex;flex-direction:column;height:100vh;font-size:13px}
 
 /* -- Header -- */
-header{display:flex;align-items:center;gap:12px;padding:0 18px;height:50px;border-bottom:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.06);background:var(--panel);flex-shrink:0;z-index:10}
+header{display:flex;align-items:center;gap:12px;padding:env(safe-area-inset-top) 18px 0;min-height:calc(50px + env(safe-area-inset-top));border-bottom:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.06);background:var(--panel);flex-shrink:0;z-index:10}
 .logo{font-family:var(--font-h);font-weight:900;font-size:24px;letter-spacing:.06em;color:var(--accent);text-transform:uppercase;line-height:1}
 .logo em{color:var(--text);font-style:normal}
 .logo sup{font-size:10px;color:var(--orange);letter-spacing:.1em;vertical-align:super;margin-left:2px}
@@ -154,7 +154,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.3}
 .map-empty-txt{font-family:var(--font-h);font-size:14px;letter-spacing:.1em;color:var(--muted);opacity:.5}
 
 /* -- Loading -- */
-.loading{position:absolute;inset:0;background:rgba(245,247,250,.9);display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:1000}
+.loading{position:fixed;inset:0;background:rgba(245,247,250,.9);display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:3000}
 .loading.vis{display:flex}
 .spin{width:34px;height:34px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -173,7 +173,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.3}
 .err.vis{display:block}
 
 /* -- Toast -- */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:12px;color:var(--text);transition:transform .3s;z-index:9999;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.1);display:none}
+.toast{position:fixed;bottom:calc(76px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(80px);background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:12px;color:var(--text);transition:transform .3s;z-index:9999;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.1);display:none}
 .toast.vis{display:block;transform:translateX(-50%) translateY(0)}
 .toast.good{border-color:rgba(34,197,94,.4);color:var(--green)}
 .toast.warn{border-color:rgba(234,179,8,.4);color:var(--yellow)}
@@ -324,15 +324,26 @@ input[type=number]::-webkit-inner-spin-button{opacity:.3}
 .bt-bar-fill{height:100%;border-radius:4px;transition:width .3s}
 .bt-score{font-size:10px;color:var(--muted);text-align:center;margin-top:2px;font-family:var(--font-h);font-weight:700}
 
+/* -- App shell: 3 tabs (Route / Map / Forecast) -- */
+html,body{height:100%;overflow:hidden}
+body{height:100vh;height:100dvh}
+main{display:block;position:relative;flex:1;min-height:0;overflow:hidden}
+.tab-pane{display:none;position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;background:var(--bg)}
+.tab-pane.active{display:block}
+.pane-inner{max-width:760px;margin:0 auto;min-height:100%;background:var(--panel);padding-bottom:16px}
+@media(min-width:761px){.pane-inner{border-left:1px solid var(--border);border-right:1px solid var(--border)}}
+#tab-map{overflow:hidden}
+#tab-map .map-wrap{position:absolute;inset:0;flex:none}
+#tab-forecast .chart-area{height:auto;min-height:190px;margin:0 12px 12px;border:1px solid var(--border);border-radius:10px}
+.forecast-empty{padding:40px 24px;text-align:center;color:var(--muted);font-size:13px;line-height:1.6}
+.tabbar{flex-shrink:0;display:flex;background:var(--panel);border-top:1px solid var(--border);padding-bottom:env(safe-area-inset-bottom);z-index:20;box-shadow:0 -1px 4px rgba(0,0,0,.05)}
+.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px 7px;background:none;border:none;color:var(--muted);font-family:var(--font-h);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;position:relative;-webkit-tap-highlight-color:transparent}
+.tab-btn svg{width:24px;height:24px}
+.tab-btn.active{color:var(--accent)}
+.tab-btn .dot{display:none;position:absolute;top:6px;left:calc(50% + 10px);width:8px;height:8px;border-radius:50%;background:var(--orange)}
+.tab-btn.has-new .dot{display:block}
+
 @media(max-width:680px){
-  html,body{overflow:auto}
-  body{height:auto;min-height:100vh}
-  main{flex-direction:column;overflow:visible;height:auto;padding:0 12px}
-  .sidebar{width:100%;max-height:none;overflow-y:visible;flex-shrink:0}
-  .right-panel{flex:none;height:auto;overflow:visible}
-  .map-wrap{height:50vh;min-height:300px;flex:none;border-radius:10px;overflow:hidden;margin-bottom:10px}
-  #map{height:100%}
-  .chart-area{height:auto;min-height:190px;flex:none}
   header{flex-wrap:wrap;height:auto;padding:8px 14px;gap:8px}
   .hdr-badges{margin-left:0}
   /* POI overlay responsive */
@@ -362,9 +373,8 @@ input[type=number]::-webkit-inner-spin-button{opacity:.3}
 </header>
 
 <main>
-<!-- SIDEBAR -->
-<aside class="sidebar">
-
+<!-- TAB 1: ROUTE -->
+<section class="tab-pane active" id="tab-route" role="tabpanel"><div class="pane-inner">
   <!-- S1 Strava -->
   <div class="sec-hdr" onclick="toggleSec('sec-strava')">
     <span class="sec-label" data-i18n="sec_strava">01 &#8212; Conectar Strava</span>
@@ -465,38 +475,10 @@ input[type=number]::-webkit-inner-spin-button{opacity:.3}
   <button class="btn-notif" id="notifBtn" onclick="handleNotif()" data-i18n="btn_notif">&#128276; Notificarme 1h antes del recorrido</button>
   <button class="btn-summary" id="summaryBtn" onclick="generateSummary()" style="display:none" data-i18n="btn_summary">&#128248; Resumen para compartir</button>
 
-  <!-- Summary cards -->
-  <div class="cards-grid" id="cardsGrid" style="display:none">
-    <div class="scard"><div class="scard-lbl" data-i18n="card_temp">Rango de Temp</div><div class="scard-val c-t" id="sc-temp">&#8212;</div><div class="scard-sub" id="sc-temp-sub" data-i18n="card_temp_sub">a lo largo de la ruta</div></div>
-    <div class="scard"><div class="scard-lbl" data-i18n="card_rain">Riesgo de Lluvia</div><div class="scard-val c-r" id="sc-rain">&#8212;</div><div class="scard-sub" id="sc-rain-sub" data-i18n="card_rain_sub">probabilidad m&#225;xima</div></div>
-    <div class="scard"><div class="scard-lbl" data-i18n="card_wind">Viento M&#225;x</div><div class="scard-val c-w" id="sc-wind">&#8212;</div><div class="scard-sub" id="sc-wind-sub">km/h</div></div>
-    <div class="scard"><div class="scard-lbl" data-i18n="card_cond">Condiciones</div><div class="scard-val c-g" id="sc-cond">&#8212;</div><div class="scard-sub" data-i18n="card_cond_sub">para pedalear</div></div>
-  </div>
+</div></section>
 
-  <!-- Weather alert banner -->
-  <div class="alert-banner" id="alertBanner" data-i18n="alert_adverse">&#9888;&#65039; Alerta: Condiciones adversas en parte de la ruta</div>
-
-  <!-- Gear panel -->
-  <div class="gear-panel" id="gearPanel">
-    <div class="gear-hdr">
-      <span class="gear-icon">&#128085;</span>
-      <span class="gear-title" data-i18n="gear_title">Equipamiento Recomendado</span>
-    </div>
-    <div class="gear-zones" id="gearZones"></div>
-  </div>
-
-  <!-- Waypoints -->
-  <div id="wpSection" style="display:none">
-    <div class="sec-hdr" style="cursor:default">
-      <span class="sec-label" data-i18n="sec_waypoints">04 &#8212; Puntos de la Ruta</span>
-    </div>
-    <div class="wp-list" id="wpList"></div>
-  </div>
-
-</aside>
-
-<!-- RIGHT PANEL -->
-<div class="right-panel">
+<!-- TAB 2: MAP -->
+<section class="tab-pane" id="tab-map" role="tabpanel">
   <div class="map-wrap">
     <div id="map">
       <div class="map-empty" id="mapEmpty">
@@ -522,12 +504,32 @@ input[type=number]::-webkit-inner-spin-button{opacity:.3}
       </div>
       <div class="poi-overlay-body" id="poiResults"></div>
     </div>
-    <div class="loading" id="loadingDiv">
-      <div class="spin"></div>
-      <div class="load-label" data-i18n="loading_weather">Obteniendo Clima</div>
-      <div class="load-sub" id="loadSub" data-i18n="loading_sampling">Muestreando ruta&#8230;</div>
-    </div>
   </div>
+</section>
+
+<!-- TAB 3: FORECAST -->
+<section class="tab-pane" id="tab-forecast" role="tabpanel"><div class="pane-inner">
+  <div class="forecast-empty" id="forecastEmpty" data-i18n="forecast_empty">Carga una ruta y pulsa «Analizar Clima» para ver aquí la previsión.</div>
+  <!-- Summary cards -->
+  <div class="cards-grid" id="cardsGrid" style="display:none">
+    <div class="scard"><div class="scard-lbl" data-i18n="card_temp">Rango de Temp</div><div class="scard-val c-t" id="sc-temp">&#8212;</div><div class="scard-sub" id="sc-temp-sub" data-i18n="card_temp_sub">a lo largo de la ruta</div></div>
+    <div class="scard"><div class="scard-lbl" data-i18n="card_rain">Riesgo de Lluvia</div><div class="scard-val c-r" id="sc-rain">&#8212;</div><div class="scard-sub" id="sc-rain-sub" data-i18n="card_rain_sub">probabilidad m&#225;xima</div></div>
+    <div class="scard"><div class="scard-lbl" data-i18n="card_wind">Viento M&#225;x</div><div class="scard-val c-w" id="sc-wind">&#8212;</div><div class="scard-sub" id="sc-wind-sub">km/h</div></div>
+    <div class="scard"><div class="scard-lbl" data-i18n="card_cond">Condiciones</div><div class="scard-val c-g" id="sc-cond">&#8212;</div><div class="scard-sub" data-i18n="card_cond_sub">para pedalear</div></div>
+  </div>
+
+  <!-- Weather alert banner -->
+  <div class="alert-banner" id="alertBanner" data-i18n="alert_adverse">&#9888;&#65039; Alerta: Condiciones adversas en parte de la ruta</div>
+
+  <!-- Gear panel -->
+  <div class="gear-panel" id="gearPanel">
+    <div class="gear-hdr">
+      <span class="gear-icon">&#128085;</span>
+      <span class="gear-title" data-i18n="gear_title">Equipamiento Recomendado</span>
+    </div>
+    <div class="gear-zones" id="gearZones"></div>
+  </div>
+
   <div class="chart-area" id="chartArea">
     <div class="chart-tabs">
       <button class="ctab active" onclick="switchChart('temp',this)" data-i18n="chart_temp">&#127777; Temp</button>
@@ -542,8 +544,40 @@ input[type=number]::-webkit-inner-spin-button{opacity:.3}
       <div id="xhairDots" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:11"></div>
     </div>
   </div>
-</div>
+
+  <!-- Waypoints -->
+  <div id="wpSection" style="display:none">
+    <div class="sec-hdr" style="cursor:default">
+      <span class="sec-label" data-i18n="sec_waypoints">04 &#8212; Puntos de la Ruta</span>
+    </div>
+    <div class="wp-list" id="wpList"></div>
+  </div>
+
+</div></section>
 </main>
+
+<!-- Loading overlay (global, visible from any tab) -->
+    <div class="loading" id="loadingDiv">
+      <div class="spin"></div>
+      <div class="load-label" data-i18n="loading_weather">Obteniendo Clima</div>
+      <div class="load-sub" id="loadSub" data-i18n="loading_sampling">Muestreando ruta&#8230;</div>
+    </div>
+
+<!-- Bottom tab bar -->
+<nav class="tabbar" role="tablist" aria-label="RouteWeather">
+  <button type="button" class="tab-btn active" data-tab="route" role="tab" aria-selected="true" onclick="showTab('route')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/></svg>
+    <span data-i18n="tab_route">Ruta</span><i class="dot"></i>
+  </button>
+  <button type="button" class="tab-btn" data-tab="map" role="tab" aria-selected="false" onclick="showTab('map')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.1 5.55a2 2 0 0 0 1.79 0l3.66-1.83A1 1 0 0 1 21 4.62v12.76a1 1 0 0 1-.55.9l-4.55 2.27a2 2 0 0 1-1.79 0l-4.21-2.1a2 2 0 0 0-1.79 0l-3.66 1.83A1 1 0 0 1 3 19.38V6.62a1 1 0 0 1 .55-.9l4.55-2.27a2 2 0 0 1 1.79 0z"/><path d="M15 5.76v15"/><path d="M9 3.24v15"/></svg>
+    <span data-i18n="tab_map">Mapa</span><i class="dot"></i>
+  </button>
+  <button type="button" class="tab-btn" data-tab="forecast" role="tab" aria-selected="false" onclick="showTab('forecast')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M20 12h2"/><path d="m19.07 4.93-1.41 1.41"/><path d="M15.95 12.65a4 4 0 0 0-5.93-4.13"/><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z"/></svg>
+    <span data-i18n="tab_forecast">Previsión</span><i class="dot"></i>
+  </button>
+</nav>
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
@@ -754,6 +788,10 @@ let currentLang = 'es';
 const i18n = {
   en: {
     tagline: 'Cycling Weather Intelligence',
+    tab_route: 'Route',
+    tab_map: 'Map',
+    tab_forecast: 'Forecast',
+    forecast_empty: 'Load a route and tap “Analyse Weather” to see the forecast here.',
     badge_forecast: 'Forecast Mode',
     badge_api: 'Open-Meteo Ready',
     badge_strava: '⚡ Strava Architecture',
@@ -984,6 +1022,10 @@ const i18n = {
   },
   es: {
     tagline: 'Inteligencia Meteorológica para Ciclismo',
+    tab_route: 'Ruta',
+    tab_map: 'Mapa',
+    tab_forecast: 'Previsión',
+    forecast_empty: 'Carga una ruta y pulsa «Analizar Clima» para ver aquí la previsión.',
     badge_forecast: 'Modo Previsión',
     badge_api: 'Open-Meteo Listo',
     badge_strava: '⚡ Arquitectura Strava',
@@ -1298,6 +1340,12 @@ function decodePolyline(encoded) {
 // IMPORTANT: Set this to your backend URL
 const BACKEND_URL = 'https://routeweather-backend-production.up.railway.app';
 
+// Are we running inside the real phone app (Android / iPhone) rather than a web browser?
+const IS_NATIVE = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform());
+function nativePlugin(name) {
+  return (IS_NATIVE && window.Capacitor.Plugins && window.Capacitor.Plugins[name]) || null;
+}
+
 let stravaState = {
   accessToken: null,
   athleteName: null,
@@ -1307,6 +1355,12 @@ let stravaState = {
 
 function stravaConnect() {
   // Redirect to backend, which handles the OAuth redirect to Strava
+  var browser = nativePlugin('Browser');
+  if (browser) {
+    // Phone app: log in through the phone's own browser, then Strava sends us back to the app
+    browser.open({ url: BACKEND_URL + '/auth/strava?app=1' });
+    return;
+  }
   window.location.href = BACKEND_URL + '/auth/strava';
 }
 
@@ -1396,13 +1450,13 @@ async function importStravaUrl() {
   }
 }
 
-async function stravaHandleCallback() {
-  const params = new URLSearchParams(window.location.search);
+async function stravaHandleCallback(appParams) {
+  const params = appParams || new URLSearchParams(window.location.search);
 
   // Check for error from backend
   const error = params.get('strava_error');
   if (error) {
-    window.history.replaceState({}, document.title, window.location.pathname);
+    if (!appParams) window.history.replaceState({}, document.title, window.location.pathname);
     stravaShowError(t('strava_error_token') + ': ' + error);
     showToast(t('strava_error_token'), 'warn');
     return;
@@ -1415,7 +1469,7 @@ async function stravaHandleCallback() {
   const athleteName = params.get('strava_athlete') || 'Athlete';
 
   // Clean the URL
-  window.history.replaceState({}, document.title, window.location.pathname);
+  if (!appParams) window.history.replaceState({}, document.title, window.location.pathname);
 
   stravaState.accessToken = token;
   stravaState.athleteName = athleteName;
@@ -1611,16 +1665,73 @@ document.addEventListener('DOMContentLoaded', () => {
   // Check for Strava OAuth callback
   stravaHandleCallback();
 
+  // Phone app: Strava login finishes by opening routeweather://auth?... — catch it here
+  var appPlugin = nativePlugin('App');
+  if (appPlugin) {
+    appPlugin.addListener('appUrlOpen', function(ev) {
+      try {
+        if (!ev.url || ev.url.indexOf('routeweather://') !== 0) return;
+        var q = ev.url.indexOf('?');
+        var params = new URLSearchParams(q >= 0 ? ev.url.slice(q + 1) : '');
+        var browser = nativePlugin('Browser');
+        if (browser) browser.close().catch(function(){});
+        showTab('route');
+        stravaHandleCallback(params);
+      } catch (e) { console.warn('appUrlOpen failed', e); }
+    });
+  }
+
   // Apply initial translations
   applyTranslations();
 });
 
 function initMap() {
   map = L.map('map', { zoomControl: true }).setView([40.97, -5.66], 5);
-     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-       { attribution: '© OpenStreetMap contributors', maxZoom: 19 }).addTo(map);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    { attribution: '© OpenStreetMap contributors', maxZoom: 19 }).addTo(map);
   document.getElementById('mapEmpty').style.display = 'flex';
 }
+
+
+// ======================================================
+// TABS (Route / Map / Forecast)
+// ======================================================
+let currentTab = 'route';
+function showTab(name) {
+  if (['route','map','forecast'].indexOf(name) < 0) return;
+  currentTab = name;
+  document.querySelectorAll('.tab-pane').forEach(function(p){ p.classList.toggle('active', p.id === 'tab-' + name); });
+  document.querySelectorAll('.tab-btn').forEach(function(b){
+    var on = b.dataset.tab === name;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-selected', on ? 'true' : 'false');
+    if (on) b.classList.remove('has-new');
+  });
+  if (name === 'map') {
+    requestAnimationFrame(function(){
+      map.invalidateSize();
+      if (st.fitBoundsPending) { map.fitBounds(st.fitBoundsPending, {padding:[30,30]}); st.fitBoundsPending = null; }
+    });
+  }
+  if (name === 'forecast' && st.chart) {
+    requestAnimationFrame(function(){ st.chart.resize(); st.chart.update('none'); });
+  }
+}
+function markTabNew(name) {
+  if (currentTab === name) return;
+  var b = document.querySelector('.tab-btn[data-tab="' + name + '"]');
+  if (b) b.classList.add('has-new');
+}
+// Fit the map to the route — deferred until the Map tab is visible (a hidden map has no size)
+function fitRoute(bounds) {
+  st.fitBoundsPending = bounds;
+  if (currentTab === 'map') {
+    map.invalidateSize();
+    map.fitBounds(bounds, {padding:[30,30]});
+    st.fitBoundsPending = null;
+  }
+}
+window.addEventListener('resize', function(){ if (typeof map !== 'undefined' && map && currentTab === 'map') map.invalidateSize(); });
 
 function setDefaultTime() {
   const d = new Date(); d.setMinutes(0,0,0); d.setHours(d.getHours()+1);
@@ -1785,7 +1896,8 @@ function loadRoute(pts, name, meta) {
   const ll = pts.map(p => [p.lat,p.lon]);
   const base = L.polyline(ll, {color:'#cbd5e1',weight:4}).addTo(map);
   st.mapLayers.push(base);
-  map.fitBounds(base.getBounds(), {padding:[30,30]});
+  fitRoute(base.getBounds());
+  markTabNew('map');
 }
 
 // ======================================================
@@ -2020,6 +2132,9 @@ async function runAnalysis() {
     renderMapLegend();
 
     showToast(t('toast_analysis_done'), 'good');
+    document.getElementById('forecastEmpty').style.display = 'none';
+    markTabNew('map');
+    showTab('forecast');
 
   } catch(err) {
     showErr(t('toast_weather_fail', { msg: err.message }));
@@ -2115,7 +2230,7 @@ function renderRoute() {
     L.marker([wp.lat,wp.lon],{icon}).addTo(st.markerGrp).bindPopup(buildPopup(wp),{className:''});
   });
 
-  map.fitBounds(base.getBounds(),{padding:[30,30]});
+  fitRoute(base.getBounds());
 
   // ── Hover overlay for crosshair sync ──
   if (st.hoverOverlay) map.removeLayer(st.hoverOverlay);
@@ -2623,6 +2738,30 @@ async function handleNotif() {
   const btn = document.getElementById('notifBtn');
   if (!st.waypoints.length) return;
 
+  const localNotif = nativePlugin('LocalNotifications');
+  if (localNotif) {
+    // Phone app: real scheduled notification that works even when the app is closed
+    try {
+      const perm = await localNotif.requestPermissions();
+      if (perm.display !== 'granted') { showToast(t('toast_notif_denied'), 'warn'); return; }
+      const rideT = st.waypoints[0].arrivalTime;
+      const when  = new Date(rideT.getTime() - 3600*1000);
+      const body  = buildNotifSummary();
+      await localNotif.cancel({ notifications: [{ id: 1 }] }).catch(function(){});
+      if (when <= Date.now()) {
+        await localNotif.schedule({ notifications: [{ id: 1, title: t('notif_title'), body: body, schedule: { at: new Date(Date.now() + 1500) } }] });
+        showToast(t('toast_notif_now'), 'good');
+      } else {
+        await localNotif.schedule({ notifications: [{ id: 1, title: t('notif_title'), body: body, schedule: { at: when, allowWhileIdle: true } }] });
+        const ts = when.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+        btn.textContent = t('notif_btn_scheduled', { time: ts });
+        btn.classList.add('scheduled');
+        showToast(t('toast_notif_set', { time: ts }), 'good');
+      }
+    } catch (e) { console.warn('native notif failed', e); showToast(t('toast_notif_unsupported'), 'warn'); }
+    return;
+  }
+
   if (!('Notification' in window)) {
     showToast(t('toast_notif_unsupported'), 'warn'); return;
   }
@@ -2919,6 +3058,20 @@ function generateSummary() {
   canvas.toBlob(function(blob) {
     if (!blob) return;
     var file = new File([blob], 'routeweather-summary.png', { type: 'image/png' });
+
+    // Phone app: save the picture temporarily, then open the phone's share menu
+    var shareP = nativePlugin('Share'), fsP = nativePlugin('Filesystem');
+    if (shareP && fsP) {
+      var reader = new FileReader();
+      reader.onloadend = function() {
+        var b64 = String(reader.result).split(',')[1];
+        fsP.writeFile({ path: 'routeweather-summary.png', data: b64, directory: 'CACHE' })
+          .then(function(r) { return shareP.share({ files: [r.uri] }); })
+          .catch(function(e) { console.warn('native share failed', e); });
+      };
+      reader.readAsDataURL(blob);
+      return;
+    }
 
     // Mobile: use native share sheet (opens WhatsApp directly)
     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -3549,7 +3702,7 @@ function applyLang() { applyTranslations(); }
 // ======================================================
 // PWA — SERVICE WORKER REGISTRATION
 // ======================================================
-if ('serviceWorker' in navigator) {
+if (!IS_NATIVE && 'serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     // First, unregister any old/broken service workers, then register fresh
     navigator.serviceWorker.getRegistrations().then(function(regs) {
@@ -3574,6 +3727,7 @@ if ('serviceWorker' in navigator) {
 // PWA install prompt — show custom banner on mobile
 var deferredInstallPrompt = null;
 window.addEventListener('beforeinstallprompt', function(e) {
+  if (IS_NATIVE) return;
   e.preventDefault();
   deferredInstallPrompt = e;
   // Show an install banner
