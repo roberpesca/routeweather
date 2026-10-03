@@ -615,6 +615,17 @@ input:focus,select:focus{border-color:var(--accent);background:#fff;box-shadow:0
 .leaflet-popup-content-wrapper{border-radius:14px;box-shadow:0 4px 16px rgba(32,33,36,.28)}
 .leaflet-popup-content{margin:12px 34px 12px 16px!important;font-family:var(--font);font-size:15px;line-height:1.35;min-width:140px}
 .leaflet-popup-close-button{top:8px!important;right:8px!important;font-size:20px!important}
+.poi-item-icon.t-icecream{background:#f9ebf0;color:#c2577a}
+.poi-item-icon.t-restaurant{background:#f9ece6;color:#b4552d}
+.poi-item-icon.t-shop{background:#e8f3ed;color:#3d7a5a}
+.poi-item-icon.t-bike{background:#e9edf2;color:#3b4a5a}
+.poi-pin.t-icecream{background:#c2577a}.poi-pin.t-restaurant{background:#b4552d}.poi-pin.t-shop{background:#3d7a5a}.poi-pin.t-bike{background:#3b4a5a}
+.poi-item-side{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.poi-link{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#f1f3f4;color:#1b61d9}
+.poi-open-ok{color:#1e8e3e;font-weight:600}
+.poi-open-unk{color:#9aa0a6}
+.poi-note{font-size:12.5px;line-height:1.45;color:#80868b;padding:6px 6px 2px}
+.poi-pop-link{color:#1b61d9;font-weight:600;font-size:14px;text-decoration:none}
 </style>
 </head>
 <body>
@@ -1099,11 +1110,20 @@ const i18n = {
     bt_hour_fmt: 'hour',
     // POI — stops & fountains
     poi_title: 'Stops Along Route',
-    poi_cafes: 'Cafes & Restaurants',
+    poi_cafes: 'Coffee & food',
+    poi_shops: 'Shops',
+    poi_bikes: 'Bike help',
+    poi_icecream: 'Ice cream',
+    poi_shop: 'Shop',
+    poi_bike: 'Bike shop / repair',
+    poi_open: 'Open on arrival',
+    poi_hours_unknown: 'Hours not listed',
+    poi_maps: 'See reviews on Google Maps',
+    poi_note: 'Stops come from OpenStreetMap and are ranked by how complete and recent their listing is. Check reviews with the arrow before relying on one.',
     poi_fountains: 'Drinking Water',
     poi_loading: 'Searching nearby stops…',
     poi_none: 'No stops found near the route',
-    poi_distance: '{d}m from route',
+    poi_distance: '{d} from route',
     poi_btn: 'Find Stops',
     poi_cafe: 'Cafe',
     poi_restaurant: 'Restaurant',
@@ -1339,11 +1359,20 @@ const i18n = {
     bt_hour_fmt: 'hora',
     // POI — stops & fountains
     poi_title: 'Paradas en la Ruta',
-    poi_cafes: 'Cafeterías y Restaurantes',
+    poi_cafes: 'Café y comida',
+    poi_shops: 'Tiendas',
+    poi_bikes: 'Ayuda para la bici',
+    poi_icecream: 'Heladería',
+    poi_shop: 'Tienda',
+    poi_bike: 'Taller / tienda de bicis',
+    poi_open: 'Abierto al llegar',
+    poi_hours_unknown: 'Horario no indicado',
+    poi_maps: 'Ver reseñas en Google Maps',
+    poi_note: 'Las paradas vienen de OpenStreetMap y se ordenan según lo completo y reciente que sea su ficha. Mira las reseñas con la flecha antes de fiarte de una.',
     poi_fountains: 'Agua Potable',
     poi_loading: 'Buscando paradas cercanas…',
     poi_none: 'No se encontraron paradas cerca de la ruta',
-    poi_distance: '{d}m de la ruta',
+    poi_distance: '{d} de la ruta',
     poi_btn: 'Buscar Paradas',
     poi_cafe: 'Cafetería',
     poi_restaurant: 'Restaurante',
@@ -3589,17 +3618,26 @@ async function showBestTime() {
 }
 
 // ======================================================
-// POI FINDER — CAFES, BARS, BREAKFAST SPOTS & DRINKING FOUNTAINS
+// STOPS FINDER — cafes, bars, bakeries, shops, bike help and drinking water
+// Data: OpenStreetMap (via Overpass). No reviews exist there, so stops are
+// ranked by how complete/recent their listing is, whether they are open at
+// the time you would pass, and how close they are to the route.
 // ======================================================
 var poiMarkers = [];
 
 var POI_ICON = {
   cafe:'<path d="M4.5 9.5h12v4.6a4.4 4.4 0 0 1-4.4 4.4H8.9a4.4 4.4 0 0 1-4.4-4.4z"/><path d="M16.5 11h1.1a2.3 2.3 0 0 1 0 4.6h-1.4"/><path d="M3.5 21h14"/><path d="M8.2 3.6c-.8 1 .8 1.9 0 3M12.6 3.6c-.8 1 .8 1.9 0 3"/>',
   bar:'<path d="M7 4h10l-.9 6.2a4.1 4.1 0 0 1-8.2 0z"/><path d="M12 14.4V20M8.5 20h7"/>',
-  bakery:'<path d="M5 10.2A4.2 4.2 0 0 1 9.2 6h5.6A4.2 4.2 0 0 1 19 10.2c0 1.2-.6 2.1-1.5 2.6V18a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1v-5.2C5.6 12.300 5 11.400 5 10.200z"/><path d="M9.800 10.400v2M12.800 10.400v2"/>',
-  fountain:'<path d="M12 3.500s6 6.200 6 10.500a6 6 0 0 1-12 0C6 9.700 12 3.500 12 3.500z"/><path d="M9.300 14.600a2.700 2.700 0 0 0 2.100 2.500"/>'
+  bakery:'<path d="M5 10.2A4.2 4.2 0 0 1 9.2 6h5.6A4.2 4.2 0 0 1 19 10.2c0 1.2-.6 2.1-1.5 2.6V18a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1v-5.2C5.6 12.3 5 11.4 5 10.2z"/><path d="M9.8 10.4v2M12.8 10.4v2"/>',
+  icecream:'<path d="M7.5 11h9L12 20.5z"/><path d="M7.5 11a4.5 4.5 0 1 1 9 0"/>',
+  restaurant:'<path d="M6 3v6a2 2 0 0 0 4 0V3M8 11v10"/><path d="M16.5 21V3c-2 1.4-3.2 4-3.2 7 0 1.6 1.1 2.7 3.2 3"/>',
+  shop:'<path d="M3.5 9h17"/><path d="M5.2 9l1.3 9.2a2 2 0 0 0 2 1.8h7a2 2 0 0 0 2-1.8L18.8 9"/><path d="M9 9l3-5M15 9l-3-5"/>',
+  bike:'<circle cx="6" cy="16" r="3.5"/><circle cx="18" cy="16" r="3.5"/><path d="M6 16l4-8h5l3 8M10 8l2.5 8M9 6h2.5"/>',
+  fountain:'<path d="M12 3.5s6 6.2 6 10.5a6 6 0 0 1-12 0C6 9.7 12 3.5 12 3.5z"/><path d="M9.3 14.6a2.7 2.7 0 0 0 2.1 2.5"/>'
 };
-var POI_COLOR = { cafe:'#8a5a3c', bar:'#6a5a94', bakery:'#b07a1f', fountain:'#1b61d9' };
+var POI_LINK_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg>';
+var POI_GROUP = { cafe:'food', bar:'food', bakery:'food', icecream:'food', restaurant:'food', shop:'shop', bike:'bike', fountain:'water' };
+
 function poiSvg(type, px, color) {
   return '<svg viewBox="0 0 24 24" width="'+px+'" height="'+px+'" fill="none" stroke="'+(color||'currentColor')+'" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+POI_ICON[type]+'</svg>';
 }
@@ -3618,8 +3656,110 @@ function closePoiOverlay() {
   document.getElementById('poiBtn').style.display = 'block';
   setPoiDock(false);
 }
+function poiMapsUrl(p) {
+  var base = 'https://www.google.com/maps/search/';
+  var q = p.hasName ? encodeURIComponent(p.name) : (p.lat + ',' + p.lon);
+  return base + q + '/@' + p.lat + ',' + p.lon + ',18z';
+}
+function openExternalUrl(url) {
+  var B = nativePlugin('Browser');
+  if (B && B.open) { B.open({ url: url }); } else { window.open(url, '_blank', 'noopener'); }
+}
+function poiDistText(d) { return d < 1000 ? d + ' m' : (d / 1000).toFixed(1) + ' km'; }
 
+// ---- Opening hours (handles the common OSM formats; returns true / false / null = unknown) ----
+var OH_DAYS = ['Mo','Tu','We','Th','Fr','Sa','Su'];
+function ohDayIdx(tok) { return OH_DAYS.indexOf(tok); }
+function ohOpenAt(str, date) {
+  if (!str) return null;
+  str = String(str).trim();
+  if (/^24\/7$/i.test(str)) return true;
+  var day = (date.getDay() + 6) % 7;            // Mo=0
+  var mins = date.getHours() * 60 + date.getMinutes();
+  var result = null, matched = false;
+  var rules = str.split(';');
+  for (var r = 0; r < rules.length; r++) {
+    var rule = rules[r].trim();
+    if (!rule) continue;
+    var daysPart = null, timesPart = rule;
+    var m = rule.match(/^((?:[A-Za-z]{2}(?:\s*-\s*[A-Za-z]{2})?)(?:\s*,\s*[A-Za-z]{2}(?:\s*-\s*[A-Za-z]{2})?)*)\s*(.*)$/);
+    if (m && !/^(off|closed)$/i.test(rule) && /^[A-Za-z]{2}/.test(rule)) { daysPart = m[1]; timesPart = m[2].trim(); }
+    var dayMatch = true;
+    if (daysPart !== null) {
+      dayMatch = false;
+      var segs = daysPart.split(',');
+      for (var s = 0; s < segs.length; s++) {
+        var ab = segs[s].trim().split(/\s*-\s*/);
+        var a = ohDayIdx(ab[0]), b = ab.length > 1 ? ohDayIdx(ab[1]) : a;
+        if (ab[0] === 'PH' || ab[0] === 'SH') { dayMatch = false; if (segs.length === 1) { dayMatch = null; } continue; }
+        if (a < 0 || b < 0) return null;        // months, weeks, etc. -> unknown
+        if (a <= b ? (day >= a && day <= b) : (day >= a || day <= b)) dayMatch = true;
+      }
+    }
+    if (dayMatch === null) continue;            // public-holiday-only rule: ignore
+    if (!dayMatch) continue;
+    matched = true;
+    if (/^(off|closed)$/i.test(timesPart)) { result = false; continue; }
+    if (!timesPart) { result = true; continue; }
+    var ranges = timesPart.split(','), open = false;
+    for (var k = 0; k < ranges.length; k++) {
+      var tm = ranges[k].trim().match(/^(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})$/);
+      if (!tm) return null;
+      var st0 = +tm[1] * 60 + +tm[2], en0 = +tm[3] * 60 + +tm[4];
+      if (en0 <= st0) en0 += 1440;
+      if (mins >= st0 && mins < en0) open = true;
+    }
+    result = open;
+  }
+  if (!matched) return false;
+  return result;
+}
 
+function poiStartDate() {
+  var v = document.getElementById('startTime').value;
+  var d = v ? new Date(v) : new Date(Date.now() + 3600000);
+  return isNaN(d) ? new Date(Date.now() + 3600000) : d;
+}
+function poiSpeedKmh() {
+  var v = parseFloat(document.getElementById('avgSpeed').value) || 20;
+  if (document.getElementById('speedUnit').value === 'mph') v *= 1.609344;
+  return Math.max(8, v);
+}
+
+function poiClassify(tags) {
+  var a = tags.amenity, sh = tags.shop;
+  if (a === 'drinking_water') return 'fountain';
+  if (a === 'bicycle_repair_station' || sh === 'bicycle') return 'bike';
+  if (a === 'cafe' || sh === 'coffee') return 'cafe';
+  if (a === 'bar' || a === 'pub') return 'bar';
+  if (sh === 'bakery' || sh === 'pastry') return 'bakery';
+  if (a === 'ice_cream' || sh === 'ice_cream') return 'icecream';
+  if (a === 'restaurant') return 'restaurant';
+  if (sh === 'convenience' || sh === 'supermarket') return 'shop';
+  return null;
+}
+
+function poiScore(tags, type, distM, openState) {
+  var s = { cafe:10, bakery:9, bar:8, bike:8, shop:6, icecream:5, restaurant:5, fountain:5 }[type] || 5;
+  var hasName = !!tags.name;
+  s += hasName ? 6 : -8;
+  if (tags.opening_hours) s += 3;
+  if (openState === true) s += 6;
+  if (tags.website || tags['contact:website'] || tags.phone || tags['contact:phone']) s += 3;
+  if (tags['contact:instagram'] || tags['contact:facebook']) s += 1;
+  if (tags.wikidata) s += 2;
+  if (tags.brand) s += 1;
+  if (tags.outdoor_seating === 'yes') s += 1;
+  if (tags.cuisine && /coffee|bakery|pastry|breakfast/.test(tags.cuisine)) s += 1;
+  if (tags.bicycle === 'yes' || tags['service:bicycle:repair'] === 'yes') s += 2;
+  var cd = tags.check_date || tags['survey:date'] || tags['check_date:opening_hours'];
+  if (cd) {
+    var age = (Date.now() - new Date(cd).getTime()) / 31557600000;
+    if (!isNaN(age)) s += age <= 1 ? 4 : age <= 3 ? 1 : -4;
+  }
+  s -= Math.min(10, distM / 100);
+  return s;
+}
 
 async function findPOIs() {
   var pts = st.rawPts;
@@ -3638,36 +3778,26 @@ async function findPOIs() {
   poiMarkers = [];
 
   try {
-    // Sample ~40 points along the route for the corridor search
-    var step = Math.max(1, Math.floor(pts.length / 40));
-    var sample = pts.filter(function(_, i) { return i % step === 0; });
-    if (sample[sample.length - 1] !== pts[pts.length - 1]) sample.push(pts[pts.length - 1]);
+    // Cumulative distance along the whole route (km)
+    var cum = [0];
+    for (var i = 1; i < pts.length; i++) cum.push(cum[i - 1] + hav(pts[i - 1], pts[i]));
+    var totalDist = cum[cum.length - 1];
 
-    // Calculate cumulative distance at each sample point (km)
-    var cumDist = [0];
-    for (var si = 1; si < sample.length; si++) {
-      cumDist.push(cumDist[si - 1] + hav(sample[si - 1], sample[si]));
+    // Sample a point about every 1.6 km (at most 120) for the corridor search
+    var spacing = Math.max(1.6, totalDist / 120);
+    var sample = [pts[0]], lastKm = 0;
+    for (var j = 1; j < pts.length; j++) {
+      if (cum[j] - lastKm >= spacing) { sample.push(pts[j]); lastKm = cum[j]; }
     }
-    var totalDist = cumDist[cumDist.length - 1];
+    if (sample[sample.length - 1] !== pts[pts.length - 1]) sample.push(pts[pts.length - 1]);
+    var coordStr = sample.map(function(p) { return p.lat.toFixed(5) + ',' + p.lon.toFixed(5); }).join(',');
+    var radius = 1000;
+    var around = '(around:' + radius + ',' + coordStr + ')';
 
-    // Build coordinate string for Overpass "around" filter
-    // This searches within a corridor along the actual route, not a bounding box
-    var coordStr = sample.map(function(p) { return p.lat + ',' + p.lon; }).join(',');
-    var radius = 1500; // 1.5km from route — cyclists can easily detour
-
-    // Overpass query using "around" for a proper corridor search
-    // Searches nodes AND ways (some POIs are mapped as building outlines)
-    var query = '[out:json][timeout:25];(' +
-      'node(around:' + radius + ',' + coordStr + ')["amenity"="cafe"];' +
-      'node(around:' + radius + ',' + coordStr + ')["amenity"="bar"];' +
-      'node(around:' + radius + ',' + coordStr + ')["shop"="bakery"];' +
-      'node(around:' + radius + ',' + coordStr + ')["shop"="pastry"];' +
-      'node(around:' + radius + ',' + coordStr + ')["shop"="coffee"];' +
-      'way(around:' + radius + ',' + coordStr + ')["amenity"="cafe"];' +
-      'way(around:' + radius + ',' + coordStr + ')["amenity"="bar"];' +
-      'way(around:' + radius + ',' + coordStr + ')["shop"="bakery"];' +
-      'node(around:' + radius + ',' + coordStr + ')["amenity"="drinking_water"];' +
-    ');out center body;';
+    var query = '[out:json][timeout:30];(' +
+      'nwr["amenity"~"^(cafe|bar|pub|restaurant|ice_cream|drinking_water|bicycle_repair_station)$"]' + around + ';' +
+      'nwr["shop"~"^(bakery|pastry|coffee|convenience|supermarket|bicycle)$"]' + around + ';' +
+      ');out center tags;';
 
     var resp = await fetch('https://overpass-api.de/api/interpreter', {
       method: 'POST',
@@ -3677,171 +3807,140 @@ async function findPOIs() {
     if (!resp.ok) throw new Error('Overpass API error: ' + resp.status);
     var data = await resp.json();
 
-    // Process results — ways use center coordinates
-    var pois = data.elements.map(function(el) {
-      var lat = el.lat || (el.center && el.center.lat);
-      var lon = el.lon || (el.center && el.center.lon);
-      if (!lat || !lon) return null;
-
-      // Find closest sample point and its km along route
-      var minDist = Infinity;
-      var closestIdx = 0;
-      for (var i = 0; i < sample.length; i++) {
-        var d = hav({ lat: lat, lon: lon }, sample[i]) * 1000;
-        if (d < minDist) { minDist = d; closestIdx = i; }
-      }
-
+    var start = poiStartDate();
+    var kmh = poiSpeedKmh();
+    var seen = {};
+    var pois = [];
+    (data.elements || []).forEach(function(el) {
       var tags = el.tags || {};
-      var isFountain = tags.amenity === 'drinking_water';
-      var type = isFountain ? 'fountain' :
-                 tags.amenity === 'cafe' ? 'cafe' :
-                 tags.amenity === 'bar' ? 'bar' :
-                 (tags.shop === 'bakery' || tags.shop === 'pastry') ? 'bakery' :
-                 tags.shop === 'coffee' ? 'cafe' : 'cafe';
-      return {
-        lat: lat, lon: lon,
-        name: tags.name || t('poi_' + type),
-        type: type, isFountain: isFountain,
-        dist: Math.round(minDist),
-        routeKm: cumDist[closestIdx]
-      };
-    }).filter(function(p) { return p !== null; });
+      var lat = el.lat != null ? el.lat : (el.center && el.center.lat);
+      var lon = el.lon != null ? el.lon : (el.center && el.center.lon);
+      if (lat == null || lon == null) return;
+      var type = poiClassify(tags);
+      if (!type) return;
 
-    var allStops = pois.filter(function(p) { return !p.isFountain; });
-    var fountains = pois.filter(function(p) { return p.isFountain; });
+      // Drop anything marked closed, abandoned or private
+      var bad = false;
+      Object.keys(tags).forEach(function(k) { if (/^(disused|abandoned|was|removed|demolished):/.test(k)) bad = true; });
+      if (bad || tags.access === 'private' || tags.opening_hours === 'off' || /^closed$/i.test(tags.opening_hours || '') ||
+          tags.opening_hours === 'closed' || tags.drinking_water === 'no' || tags.operational_status === 'closed') return;
 
-    // --- Distribute stops along route using 5km zones ---
-    var zoneKm = 5;
-    var numZones = Math.max(1, Math.ceil(totalDist / zoneKm));
-    var typePriority = { cafe: 0, bar: 1, bakery: 2 };
-
-    allStops.forEach(function(s) {
-      s.zone = Math.min(numZones - 1, Math.floor(s.routeKm / zoneKm));
-    });
-
-    // Pick best stop per zone, but allow up to 2 if the zone has many options
-    var selectedStops = [];
-    for (var z = 0; z < numZones; z++) {
-      var inZone = allStops.filter(function(s) { return s.zone === z; });
-      if (inZone.length === 0) continue;
-
-      inZone.sort(function(a, b) {
-        var aN = (a.name !== t('poi_' + a.type)) ? 0 : 1;
-        var bN = (b.name !== t('poi_' + b.type)) ? 0 : 1;
-        if (aN !== bN) return aN - bN;
-        var pa = typePriority[a.type] != null ? typePriority[a.type] : 9;
-        var pb = typePriority[b.type] != null ? typePriority[b.type] : 9;
-        if (pa !== pb) return pa - pb;
-        return a.dist - b.dist;
-      });
-
-      // Take top 1 (or 2 if zone has 4+ options, to give choice)
-      var take = inZone.length >= 4 ? 2 : 1;
-      for (var ti = 0; ti < Math.min(take, inZone.length); ti++) {
-        selectedStops.push(inZone[ti]);
+      // Distance to the real route line + km along the route
+      var minD = Infinity, idx = 0;
+      for (var q = 0; q < pts.length; q++) {
+        var d = hav({ lat: lat, lon: lon }, pts[q]) * 1000;
+        if (d < minD) { minD = d; idx = q; }
       }
-    }
+      if (minD > radius + 150) return;
+      var routeKm = cum[idx];
 
-    selectedStops.sort(function(a, b) { return a.routeKm - b.routeKm; });
+      // Is it open when you would get there?
+      var passAt = new Date(start.getTime() + (routeKm / kmh) * 3600000);
+      var openState = ohOpenAt(tags.opening_hours, passAt);
+      if (openState === false) return;            // closed at that time -> skip
 
-    // Fountains — one per 4km zone
-    var fZoneKm = 4;
-    var fNumZones = Math.max(1, Math.ceil(totalDist / fZoneKm));
-    fountains.forEach(function(f) {
-      f.zone = Math.min(fNumZones - 1, Math.floor(f.routeKm / fZoneKm));
+      var name = tags.name || tags.brand || '';
+      var key = (name.toLowerCase() + '|' + type + '|' + lat.toFixed(4) + '|' + lon.toFixed(4));
+      if (seen[key]) return; seen[key] = 1;
+
+      pois.push({
+        lat: lat, lon: lon, type: type, group: POI_GROUP[type],
+        name: name || t('poi_' + type), hasName: !!name,
+        dist: Math.round(minD), routeKm: routeKm,
+        hours: tags.opening_hours || '', openState: openState,
+        score: poiScore(tags, type, minD, openState)
+      });
     });
-    var selectedFountains = [];
-    for (var fz = 0; fz < fNumZones; fz++) {
-      var fInZone = fountains.filter(function(f) { return f.zone === fz; });
-      if (fInZone.length === 0) continue;
-      fInZone.sort(function(a, b) { return a.dist - b.dist; });
-      selectedFountains.push(fInZone[0]);
-    }
-    selectedFountains.sort(function(a, b) { return a.routeKm - b.routeKm; });
 
-    // Render
+    // Pick the best listing per stretch of route, per group
+    var cfg = { food: { zone: 6, take: 1, more: 2, moreAt: 5 }, shop: { zone: 15, take: 1 }, bike: { zone: 25, take: 1 }, water: { zone: 5, take: 1, byDist: true } };
+    var picked = { food: [], shop: [], bike: [], water: [] };
+    Object.keys(cfg).forEach(function(g) {
+      var c = cfg[g];
+      var zones = {};
+      pois.filter(function(p) { return p.group === g; }).forEach(function(p) {
+        var z = Math.floor(p.routeKm / c.zone);
+        (zones[z] = zones[z] || []).push(p);
+      });
+      Object.keys(zones).forEach(function(z) {
+        var arr = zones[z];
+        arr.sort(function(a, b) { return c.byDist ? a.dist - b.dist : b.score - a.score; });
+        var n = (c.more && arr.length >= c.moreAt) ? c.more : c.take;
+        picked[g] = picked[g].concat(arr.slice(0, n));
+      });
+      picked[g].sort(function(a, b) { return a.routeKm - b.routeKm; });
+    });
+
     results.innerHTML = '';
+    var total = picked.food.length + picked.shop.length + picked.bike.length + picked.water.length;
+    if (!total) { results.innerHTML = '<div class="poi-loading">' + t('poi_none') + '</div>'; return; }
 
-    if (selectedStops.length === 0 && selectedFountains.length === 0) {
-      results.innerHTML = '<div class="poi-loading">' + t('poi_none') + '</div>';
-      return;
-    }
-
-    if (selectedStops.length > 0) {
-      var cafeDiv = document.createElement('div');
-      cafeDiv.className = 'poi-section';
-      cafeDiv.innerHTML = '<div class="poi-section-hdr">' + t('poi_cafes') + '<span class="poi-count">' + selectedStops.length + '</span></div>';
-      selectedStops.forEach(function(poi) {
-        var icon = poi.type;
+    var sections = [
+      { g: 'food',  title: t('poi_cafes') },
+      { g: 'shop',  title: t('poi_shops') },
+      { g: 'bike',  title: t('poi_bikes') },
+      { g: 'water', title: t('poi_fountains') }
+    ];
+    sections.forEach(function(sec) {
+      var list = picked[sec.g];
+      if (!list.length) return;
+      var div = document.createElement('div');
+      div.className = 'poi-section';
+      div.innerHTML = '<div class="poi-section-hdr">' + sec.title + '<span class="poi-count">' + list.length + '</span></div>';
+      list.forEach(function(poi) {
+        var statusHtml = '';
+        if (poi.openState === true) statusHtml = '<span class="poi-open-ok">' + t('poi_open') + '</span>';
+        else if (poi.group !== 'water' && !poi.hours) statusHtml = '<span class="poi-open-unk">' + t('poi_hours_unknown') + '</span>';
         var item = document.createElement('div');
         item.className = 'poi-item';
         item.innerHTML =
           '<span class="poi-item-icon t-' + poi.type + '">' + poiSvg(poi.type, 20) + '</span>' +
           '<div class="poi-item-info">' +
             '<div class="poi-item-name">' + escHtml(poi.name) + '</div>' +
-            '<div class="poi-item-meta">' + t('poi_' + poi.type) + ' · km ' + poi.routeKm.toFixed(1) + '</div>' +
+            '<div class="poi-item-meta">' + t('poi_' + poi.type) + ' · km ' + poi.routeKm.toFixed(1) + (statusHtml ? ' · ' + statusHtml : '') + '</div>' +
           '</div>' +
-          '<span class="poi-item-dist">' + t('poi_distance', { d: poi.dist }) + '</span>';
-        item.onclick = (function(p) { return function() {
-          map.setView([p.lat, p.lon], 17);
+          '<div class="poi-item-side"><span class="poi-item-dist">' + t('poi_distance', { d: poiDistText(poi.dist) }) + '</span>' +
+          (poi.group !== 'water' ? '<a class="poi-link" href="#" aria-label="Google Maps">' + POI_LINK_ICON + '</a>' : '') + '</div>';
+        var lnk = item.querySelector('.poi-link');
+        if (lnk) lnk.onclick = function(ev) { ev.preventDefault(); ev.stopPropagation(); openExternalUrl(poiMapsUrl(poi)); };
+        item.onclick = function() {
+          map.setView([poi.lat, poi.lon], 17);
           for (var k = 0; k < poiMarkers.length; k++) {
             var ll = poiMarkers[k].getLatLng();
-            if (Math.abs(ll.lat - p.lat) < 0.0001 && Math.abs(ll.lng - p.lon) < 0.0001) {
-              poiMarkers[k].openPopup(); break;
-            }
+            if (Math.abs(ll.lat - poi.lat) < 0.00005 && Math.abs(ll.lng - poi.lon) < 0.00005) { poiMarkers[k].openPopup(); break; }
           }
-        }; })(poi);
-        cafeDiv.appendChild(item);
-        addPOIMarker(poi, icon);
+        };
+        div.appendChild(item);
+        addPOIMarker(poi);
       });
-      results.appendChild(cafeDiv);
-    }
-
-    if (selectedFountains.length > 0) {
-      var fountDiv = document.createElement('div');
-      fountDiv.className = 'poi-section';
-      fountDiv.innerHTML = '<div class="poi-section-hdr">' + t('poi_fountains') + '<span class="poi-count">' + selectedFountains.length + '</span></div>';
-      selectedFountains.forEach(function(poi) {
-        var item = document.createElement('div');
-        item.className = 'poi-item';
-        item.innerHTML =
-          '<span class="poi-item-icon t-fountain">' + poiSvg('fountain', 20) + '</span>' +
-          '<div class="poi-item-info">' +
-            '<div class="poi-item-name">' + escHtml(poi.name !== t('poi_fountain') ? poi.name : t('poi_fountain')) + '</div>' +
-            '<div class="poi-item-meta">' + t('poi_fountain') + ' · km ' + poi.routeKm.toFixed(1) + '</div>' +
-          '</div>' +
-          '<span class="poi-item-dist">' + t('poi_distance', { d: poi.dist }) + '</span>';
-        item.onclick = (function(p) { return function() {
-          map.setView([p.lat, p.lon], 17);
-          for (var k = 0; k < poiMarkers.length; k++) {
-            var ll = poiMarkers[k].getLatLng();
-            if (Math.abs(ll.lat - p.lat) < 0.0001 && Math.abs(ll.lng - p.lon) < 0.0001) {
-              poiMarkers[k].openPopup(); break;
-            }
-          }
-        }; })(poi);
-        fountDiv.appendChild(item);
-        addPOIMarker(poi, 'fountain');
-      });
-      results.appendChild(fountDiv);
-    }
+      results.appendChild(div);
+    });
+    var note = document.createElement('div');
+    note.className = 'poi-note';
+    note.textContent = t('poi_note');
+    results.appendChild(note);
 
   } catch (err) {
-    results.innerHTML = '<div class="poi-loading">❌ ' + err.message + '</div>';
+    results.innerHTML = '<div class="poi-loading">' + escHtml(err.message) + '</div>';
     console.error('POI error:', err);
   }
 }
 
-function addPOIMarker(poi, type) {
+function addPOIMarker(poi) {
   var icon = L.divIcon({
     className: 'poi-marker',
-    html: '<div class="poi-pin t-' + type + '">' + poiSvg(type, 16, '#fff') + '</div>',
+    html: '<div class="poi-pin t-' + poi.type + '">' + poiSvg(poi.type, 16, '#fff') + '</div>',
     iconSize: [30, 30],
     iconAnchor: [15, 15]
   });
+  var linkHtml = poi.group !== 'water' ? '<br/><a href="#" class="poi-pop-link" data-i="' + poiMarkers.length + '">' + t('poi_maps') + ' ↗</a>' : '';
   var marker = L.marker([poi.lat, poi.lon], { icon: icon })
-    .bindPopup('<b>' + escHtml(poi.name) + '</b><br/><span style="color:#64748b;font-size:11px">' + t('poi_' + poi.type) + ' · ' + t('poi_distance', { d: poi.dist }) + '</span>')
-    .addTo(map);
+    .bindPopup('<b>' + escHtml(poi.name) + '</b><br/><span style="color:#64748b;font-size:13px">' + t('poi_' + poi.type) + ' · ' + t('poi_distance', { d: poiDistText(poi.dist) }) + '</span>' + linkHtml);
+  marker.on('popupopen', function(e) {
+    var a = e.popup.getElement().querySelector('.poi-pop-link');
+    if (a) a.onclick = function(ev) { ev.preventDefault(); openExternalUrl(poiMapsUrl(poi)); };
+  });
+  marker.addTo(map);
   poiMarkers.push(marker);
 }
 
