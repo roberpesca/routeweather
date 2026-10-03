@@ -13,6 +13,7 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png"/>
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5/dist/maplibre-gl.css"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -578,6 +579,11 @@ input:focus,select:focus{border-color:var(--accent);background:#fff;box-shadow:0
 
 .w-feels{font-size:13px;font-weight:400;color:var(--muted);margin-left:6px}
 .bt-bar-wrap{width:68px}.bt-datetime{font-size:15px}.bt-details{gap:10px}
+
+.map-style-btn{position:absolute;top:12px;right:12px;z-index:1100;width:44px;height:44px;border-radius:50%;border:none;background:#fff;color:#3c4043;box-shadow:0 2px 8px rgba(60,64,67,.32);display:grid;place-items:center;cursor:pointer}
+.map-style-btn svg{width:22px;height:22px}
+.maplibregl-canvas-container,.maplibregl-canvas{outline:none}
+.leaflet-container .maplibregl-map{font-family:var(--font)}
 </style>
 </head>
 <body>
@@ -720,6 +726,7 @@ input:focus,select:focus{border-color:var(--accent);background:#fff;box-shadow:0
       <div class="map-legend-row"><div class="map-legend-dot" style="background:#f97316"></div><span data-i18n="legend_caution">Precauci&#243;n</span></div>
       <div class="map-legend-row"><div class="map-legend-dot" style="background:#ef4444"></div><span data-i18n="legend_dangerous">Peligroso</span></div>
     </div>
+    <button class="map-style-btn" id="mapStyleBtn" onclick="toggleMapStyle()" aria-label="Map style" title="Map style"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7z"/><path d="m2 12 10 5 10-5"/><path d="m2 17 10 5 10-5"/></svg></button>
     <!-- POI button overlay on map -->
     <button class="poi-map-btn" id="poiBtn" onclick="findPOIs()" style="display:none" data-i18n="poi_btn">&#9749; Buscar Paradas</button>
     <!-- POI results overlay on map -->
@@ -822,6 +829,8 @@ input:focus,select:focus{border-color:var(--accent);background:#fff;box-shadow:0
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5/dist/maplibre-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@maplibre/maplibre-gl-leaflet@0.1.4/leaflet-maplibre-gl.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
 // ======================================================
@@ -836,6 +845,7 @@ const i18n = {
     src_gpx_title: 'Upload a GPX file',
     src_gpx_desc: 'From your device or exported from another app',
     rc_dist: 'Distance', rc_ele: 'Climbing', rc_grade: 'Max grade',
+    map_style_light: 'Light map', map_style_color: 'Colour map',
     tagline: 'Cycling Weather Intelligence',
     tab_route: 'Route',
     tab_map: 'Map',
@@ -1075,6 +1085,7 @@ const i18n = {
     src_gpx_title: 'Subir un archivo GPX',
     src_gpx_desc: 'Desde tu dispositivo o exportado de otra app',
     rc_dist: 'Distancia', rc_ele: 'Desnivel', rc_grade: 'Pend. máx.',
+    map_style_light: 'Mapa claro', map_style_color: 'Mapa en color',
     tagline: 'Inteligencia Meteorológica para Ciclismo',
     tab_route: 'Ruta',
     tab_map: 'Mapa',
@@ -1739,19 +1750,56 @@ document.addEventListener('DOMContentLoaded', () => {
   applyTranslations();
 });
 
+// ---- Base map: clean OpenFreeMap vector styles (free, no key). Falls back to plain OpenStreetMap. ----
+const MAP_STYLES = {
+  light: 'https://tiles.openfreemap.org/styles/positron',   // very clean, light grey
+  color: 'https://tiles.openfreemap.org/styles/bright'      // colourful, closer to Google Maps
+};
+const MAP_ATTR = '<a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> © <a href="https://www.openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a> Data from <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>';
+let mapStyleKey = 'light';
+try { const sv = localStorage.getItem('rw_map_style'); if (sv && MAP_STYLES[sv]) mapStyleKey = sv; } catch (e) {}
+
+function useOsmFallback() {
+  if (st.glLayer) { try { map.removeLayer(st.glLayer); map.attributionControl.removeAttribution(MAP_ATTR); } catch (e) {} st.glLayer = null; }
+  if (st.osmLayer) return;
+  st.osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    { attribution: '© OpenStreetMap contributors', maxZoom: 19 }).addTo(map);
+  document.getElementById('map').classList.add('map-osm');
+  const b = document.getElementById('mapStyleBtn'); if (b) b.style.display = 'none';
+}
+
+function initBaseMap() {
+  if (!(window.maplibregl && L.maplibreGL)) { useOsmFallback(); return; }
+  try {
+    st.glLayer = L.maplibreGL({
+      style: MAP_STYLES[mapStyleKey],
+      attribution: ''
+    }).addTo(map);
+    map.attributionControl.addAttribution(MAP_ATTR);
+    const gl = st.glLayer.getMaplibreMap();
+    st.glOk = false;
+    gl.once('load', () => { st.glOk = true; });
+    // if the vector map has not appeared after 10 seconds (blocked, offline, old phone) use plain OpenStreetMap
+    setTimeout(() => { if (!st.glOk) useOsmFallback(); }, 10000);
+  } catch (e) {
+    console.warn('Vector map failed, using fallback', e);
+    useOsmFallback();
+  }
+  const b = document.getElementById('mapStyleBtn'); if (b) b.style.display = '';
+}
+
+function toggleMapStyle() {
+  if (!st.glLayer) return;
+  mapStyleKey = mapStyleKey === 'light' ? 'color' : 'light';
+  try { localStorage.setItem('rw_map_style', mapStyleKey); } catch (e) {}
+  try { st.glLayer.getMaplibreMap().setStyle(MAP_STYLES[mapStyleKey]); } catch (e) { console.warn(e); }
+  showToast(t(mapStyleKey === 'light' ? 'map_style_light' : 'map_style_color'), '');
+}
+
 function initMap() {
   map = L.map('map', { zoomControl: false }).setView([40.97, -5.66], 5);
   L.control.zoom({ position: 'bottomright' }).addTo(map);
-  // Optional: paste a free MapTiler key here for a map that looks even closer to Google Maps
-  const MAPTILER_KEY = '';
-  if (MAPTILER_KEY) {
-    L.tileLayer('https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=' + MAPTILER_KEY,
-      { tileSize: 512, zoomOffset: -1, maxZoom: 20, attribution: '© MapTiler © OpenStreetMap contributors' }).addTo(map);
-  } else {
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-      { attribution: '© OpenStreetMap contributors', maxZoom: 19 }).addTo(map);
-    document.getElementById('map').classList.add('map-osm');
-  }
+  initBaseMap();
   // hide the little wind arrows when zoomed far out (keeps the map readable)
   const mapEl = document.getElementById('map');
   const updateZoomClass = () => mapEl.classList.toggle('zoom-far', map.getZoom() < 11);
