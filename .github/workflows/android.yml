@@ -44,7 +44,7 @@ jobs:
           KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
           if [ "$HAS_KEY" = "true" ]; then
-            echo "$KEYSTORE_B64" | base64 -d > "$GITHUB_WORKSPACE/release.keystore"
+            echo "$KEYSTORE_B64" | tr -d " \r\n" | base64 -d > "$GITHUB_WORKSPACE/release.keystore"
             export ANDROID_KEYSTORE_FILE="$GITHUB_WORKSPACE/release.keystore"
           fi
           npm run add-android
@@ -52,6 +52,11 @@ jobs:
 
       - name: Build a test APK (installable on any Android phone)
         working-directory: mobile/android
+        env:
+          ANDROID_KEYSTORE_FILE: ${{ github.workspace }}/release.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: ./gradlew assembleDebug
 
       - name: Build the Google Play file (.aab) — only when the signing key is set up
