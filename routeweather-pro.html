@@ -641,6 +641,10 @@ input:focus,select:focus{border-color:var(--accent);background:#fff;box-shadow:0
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235f6368' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='5' width='17' height='15.5' rx='2.500'/%3E%3Cpath d='M3.500 10h17M8 3v4M16 3v4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-size:20px}
 .dt-wrap input[type=datetime-local]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:2}
 .dt-wrap:focus-within .dt-display{border-color:var(--accent);box-shadow:0 0 0 3px rgba(27,97,217,.15)}
+.strava-routes-err{line-height:1.45}
+.strava-err-code{font-size:12px;color:#80868b;margin:6px 0 10px}
+.strava-retry{height:42px;margin-top:2px}
+.strava-routes-empty small{display:block;margin-top:8px;color:#80868b;font-size:13px;line-height:1.4}
 </style>
 </head>
 <body>
@@ -944,6 +948,17 @@ const i18n = {
     strava_error_no_creds: 'Enter your Client ID and Client Secret first.',
     strava_error_no_polyline: 'This route has no polyline data.',
     strava_error_fetch: 'Failed to fetch Strava routes.',
+    strava_retry: 'Try again',
+    strava_err_rate: 'Strava is receiving too many requests right now. Wait a few minutes and try again.',
+    strava_err_auth: 'Strava did not accept the connection (your session may have expired, or a permission is missing). Disconnect, connect again and keep every box ticked.',
+    strava_err_forbidden: 'Strava refused access to your routes. Disconnect, connect again and keep every permission box ticked.',
+    strava_err_network: 'Could not reach the RouteWeather server. Check your connection and try again.',
+    strava_err_other: 'Strava returned an error.',
+    strava_only_public: 'Only your public routes are shown. To see private routes, disconnect and connect again, keeping the private-routes permission ticked.',
+    strava_conn_athlete_limit: 'RouteWeather has reached the number of Strava users it is currently allowed. Please use Import by URL or a GPX file for now.',
+    strava_conn_missing_permissions: 'Strava needs at least permission to view your routes. Connect again and keep the boxes ticked.',
+    strava_conn_denied: 'The Strava connection was cancelled.',
+    strava_conn_failed: 'The Strava connection could not be completed. Please try again.',
     strava_error_token: 'Failed to exchange code for token.',
     strava_load_more: 'Load more routes',
     drop_strong: 'Choose or drop a GPX file',
@@ -1201,6 +1216,17 @@ const i18n = {
     strava_error_no_creds: 'Introduce tu Client ID y Client Secret primero.',
     strava_error_no_polyline: 'Esta ruta no tiene datos de polílínea.',
     strava_error_fetch: 'Error al obtener las rutas de Strava.',
+    strava_retry: 'Reintentar',
+    strava_err_rate: 'Strava está recibiendo demasiadas peticiones ahora mismo. Espera unos minutos y vuelve a intentarlo.',
+    strava_err_auth: 'Strava no aceptó la conexión (puede que la sesión haya caducado o falte algún permiso). Desconecta, conecta de nuevo y deja marcadas todas las casillas.',
+    strava_err_forbidden: 'Strava ha denegado el acceso a tus rutas. Desconecta, conecta de nuevo y deja marcados todos los permisos.',
+    strava_err_network: 'No se pudo contactar con el servidor de RouteWeather. Revisa tu conexión y vuelve a intentarlo.',
+    strava_err_other: 'Strava devolvió un error.',
+    strava_only_public: 'Solo se muestran tus rutas públicas. Para ver las privadas, desconecta y conecta de nuevo dejando marcado el permiso de rutas privadas.',
+    strava_conn_athlete_limit: 'RouteWeather ha alcanzado el número de usuarios de Strava que tiene permitido por ahora. Usa mientras tanto Importar por URL o un archivo GPX.',
+    strava_conn_missing_permissions: 'Strava necesita al menos permiso para ver tus rutas. Conecta de nuevo y deja las casillas marcadas.',
+    strava_conn_denied: 'Se canceló la conexión con Strava.',
+    strava_conn_failed: 'No se pudo completar la conexión con Strava. Inténtalo de nuevo.',
     strava_error_token: 'Error al intercambiar el código por el token.',
     strava_load_more: 'Cargar más rutas',
     drop_strong: 'Elige o arrastra un archivo GPX',
@@ -1619,8 +1645,10 @@ async function stravaHandleCallback(appParams) {
   const error = params.get('strava_error');
   if (error) {
     if (!appParams) window.history.replaceState({}, document.title, window.location.pathname);
-    stravaShowError(t('strava_error_token') + ': ' + error);
-    showToast(t('strava_error_token'), 'warn');
+    const connMsgKey = { athlete_limit:'strava_conn_athlete_limit', missing_permissions:'strava_conn_missing_permissions',
+      access_denied:'strava_conn_denied', token_exchange_failed:'strava_conn_failed', server_error:'strava_conn_failed', no_code:'strava_conn_denied' }[error] || 'strava_conn_failed';
+    stravaShowError(t(connMsgKey) + ' (' + error + ')');
+    showToast(t(connMsgKey), 'warn');
     return;
   }
 
@@ -1635,6 +1663,7 @@ async function stravaHandleCallback(appParams) {
 
   stravaState.accessToken = token;
   stravaState.athleteName = athleteName;
+  stravaState.scope = params.get('strava_scope') || '';
 
   showToast(t('strava_route_loading'), '');
   stravaShowConnected();
@@ -1681,14 +1710,17 @@ async function stravaFetchRoutes() {
       headers: { 'Authorization': 'Bearer ' + stravaState.accessToken }
     });
 
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+    if (!res.ok) {
+      const e = new Error('HTTP ' + res.status); e.status = res.status; throw e;
+    }
 
     const routes = await res.json();
     stravaState.routes = routes;
     stravaState.displayCount = 15;
 
     if (!routes.length) {
-      listEl.innerHTML = '<div class="strava-routes-empty">' + t('strava_no_routes') + '</div>';
+      const hint = (stravaState.scope && stravaState.scope.indexOf('read_all') < 0) ? '<br/><small>' + t('strava_only_public') + '</small>' : '';
+      listEl.innerHTML = '<div class="strava-routes-empty">' + t('strava_no_routes') + hint + '</div>';
       return;
     }
 
@@ -1696,7 +1728,12 @@ async function stravaFetchRoutes() {
 
   } catch (err) {
     console.error('Strava routes error:', err);
-    listEl.innerHTML = '<div class="strava-routes-empty" style="color:var(--red)">' + t('strava_error_fetch') + '</div>';
+    const st0 = err && err.status;
+    const key = st0 === 429 ? 'strava_err_rate' : st0 === 401 ? 'strava_err_auth' : st0 === 403 ? 'strava_err_forbidden'
+              : (st0 >= 500 || !st0) ? 'strava_err_network' : 'strava_err_other';
+    listEl.innerHTML = '<div class="strava-routes-empty strava-routes-err">' + t(key) +
+      '<div class="strava-err-code">' + (st0 ? 'HTTP ' + st0 : 'network') + '</div>' +
+      '<button type="button" class="btn-primary-sm strava-retry" onclick="stravaFetchRoutes()">' + t('strava_retry') + '</button></div>';
   }
 }
 
