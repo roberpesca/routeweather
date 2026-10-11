@@ -1639,7 +1639,8 @@ async function importStravaUrl() {
 }
 
 async function stravaHandleCallback(appParams) {
-  const params = appParams || new URLSearchParams(window.location.search);
+  const hashHasStrava = window.location.hash && window.location.hash.indexOf('strava_') >= 0;
+  const params = appParams || new URLSearchParams(hashHasStrava ? window.location.hash.slice(1) : window.location.search);
 
   // Check for error from backend
   const error = params.get('strava_error');

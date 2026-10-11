@@ -1,5 +1,5 @@
 // RouteWeather Pro — Service Worker v2
-var CACHE_NAME = 'rwp-v2';
+var CACHE_NAME = 'rwp-v3';   // new name: the old cache (which could hold users' route lists) is deleted on update
 
 // Install — cache nothing upfront, let fetch handler populate cache on use
 // This avoids issues with relative paths in service workers
@@ -22,7 +22,7 @@ self.addEventListener('activate', function(e) {
 });
 
 // Fetch strategy:
-// - API calls (open-meteo, strava, render): network only (live data)
+// - API calls (open-meteo, strava, our backend, overpass): network only, never saved on the device
 // - Map tiles: cache-first (tiles change rarely)
 // - App shell, CDN libs, fonts: network-first with cache fallback
 self.addEventListener('fetch', function(e) {
@@ -35,7 +35,11 @@ self.addEventListener('fetch', function(e) {
   if (url.indexOf('api.open-meteo.com') !== -1 ||
       url.indexOf('strava.com') !== -1 ||
       url.indexOf('render.com') !== -1 ||
-      url.indexOf('overpass-api.de') !== -1) {
+      url.indexOf('railway.app') !== -1 ||
+      url.indexOf('/api/strava/') !== -1 ||
+      url.indexOf('/auth/strava') !== -1 ||
+      url.indexOf('overpass') !== -1 ||
+      url.indexOf('ensemble-api') !== -1) {
     return; // let browser handle normally
   }
 
